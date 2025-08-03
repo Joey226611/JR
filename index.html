@@ -2,22 +2,120 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MyOrder – Restaurant</title>
   <style>
-    body { font-family: serif; background: #f6f1e1; color: #333; margin: 20px; }
-    header { text-align: center; margin-bottom: 20px; }
-    nav button { margin: 0 5px; padding: 10px 15px; cursor: pointer; }
-    section { display: none; }
-    section.active { display: block; }
-    .item { margin-bottom: 10px; }
-    .order-summary { border-top: 1px solid #aaa; margin-top: 20px; padding-top: 10px; }
-    .login { margin-bottom: 20px; }
+    :root {
+      --main-bg: #fffaf2;
+      --accent: #e63946;
+      --primary: #1d3557;
+      --secondary: #457b9d;
+      --light: #f1faee;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--main-bg);
+      color: var(--primary);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      text-align: center;
+      background: var(--secondary);
+      color: white;
+      padding: 20px;
+    }
+
+    header img {
+      width: 100px;
+      margin-bottom: 10px;
+    }
+
+    header button {
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #venue {
+      padding: 20px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    nav button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    section {
+      display: none;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    .item {
+      margin-bottom: 15px;
+      background: var(--light);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    input[type="number"] {
+      width: 60px;
+    }
+
+    .order-summary {
+      margin-top: 20px;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+
+    .login {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .login input {
+      margin: 5px;
+    }
+
+    .status-buttons button {
+      margin-left: 5px;
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      header img {
+        width: 80px;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <img src="RLogo.png" alt="Logo" width="150"
-         onerror="this.onerror=null; this.src='RLogo.jpeg';" />
+    <img src="RLogo.jpg" alt="Logo" />
     <h1>Welkom bij MyOrder</h1>
     <button id="start-btn">START</button>
   </header>
@@ -27,16 +125,17 @@
       <label>Username: <input id="username"></label>
       <label>Password: <input id="password" type="password"></label>
       <button id="login-btn">Inloggen</button>
-      <span id="login-status"></span>
+      <div id="login-status"></div>
     </div>
+
     <nav>
       <button data-tab="dranken">Dranken</button>
       <button data-tab="fingerfood">Fingerfood</button>
-      <button data-tab="desserts">Dessert & Overige</button>
+      <button data-tab="desserts">Desserts</button>
       <button data-tab="menus">Menu’s</button>
     </nav>
 
-    <section id="dranken">
+    <section id="dranken" class="active">
       <h2>Dranken</h2>
       <div class="item">
         <span>Cola (€0.10 per stuk)</span>
@@ -51,7 +150,7 @@
     <section id="fingerfood">
       <h2>Fingerfood</h2>
       <div class="item">
-        <span>Pringles Natural (€0.001 per chip → €0.10 per 100 chips)</span>
+        <span>Pringles Natural (€0.001 per chip)</span>
         <input type="number" min="0" max="50" value="0" data-price="0.001">
       </div>
       <div class="item">
@@ -61,123 +160,119 @@
     </section>
 
     <section id="desserts">
-      <h2>Dessert & Overige</h2>
-      <p>Geen items beschikbaar momenteel.</p>
+      <h2>Desserts & Overige</h2>
+      <p>Nog geen items beschikbaar.</p>
     </section>
+
     <section id="menus">
       <h2>Menu’s</h2>
-      <p>Geen items beschikbaar momenteel.</p>
+      <p>Nog geen menu’s beschikbaar.</p>
     </section>
 
     <button id="bestel-btn">Bestellen</button>
     <div id="order-summary" class="order-summary"></div>
 
     <div id="operator-panel" style="display:none;">
-      <h2>Operator paneel — Bestellingen</h2>
+      <h2>Operator paneel</h2>
       <ul id="orders-list"></ul>
     </div>
   </div>
 
 <script>
-  const startBtn = document.getElementById('start-btn');
-  const venue = document.getElementById('venue');
-  startBtn.onclick = () => { venue.style.display = 'block'; startBtn.style.display = 'none'; };
+let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+let nextOrderId = orders.length ? Math.max(...orders.map(o => o.id)) + 1 : 1;
+let loggedIn = false;
 
-  document.querySelectorAll('nav button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(btn.dataset.tab).classList.add('active');
-    });
+function saveOrders() {
+  localStorage.setItem('orders', JSON.stringify(orders));
+}
+
+function updateOperatorPanel() {
+  const ul = document.getElementById('orders-list');
+  ul.innerHTML = '';
+  orders.forEach(order => {
+    const li = document.createElement('li');
+    li.innerHTML = `#${order.id} – €${order.total} – status: ${order.status}
+      <span class="status-buttons">
+        <button data-id="${order.id}" data-status="bereiding">Bereiding</button>
+        <button data-id="${order.id}" data-status="klaar">Klaar</button>
+      </span>`;
+    ul.appendChild(li);
   });
 
-  // show default tab
-  document.querySelector('nav button[data-tab="dranken"]').click();
-
-  let orders = [];
-  let nextOrderId = 1;
-  let loggedIn = false;
-
-  document.getElementById('bestel-btn').onclick = () => {
-    const items = [];
-    let total = 0;
-    document.querySelectorAll('section.active .item input').forEach(inp => {
-      const qty = parseInt(inp.value) || 0;
-      const price = parseFloat(inp.dataset.price);
-      if (qty > 0) {
-        items.push({ name: inp.previousSibling.textContent.trim(), qty, price });
-        total += qty * price;
-      }
-    });
-    if (items.length === 0) {
-      alert('Kies minstens één item.');
-      return;
-    }
-    const order = { id: nextOrderId++, items, total: total.toFixed(2), status: 'nieuw' };
-    orders.push(order);
-    showSummary(order);
-  };
-
-  function showSummary(order) {
-    const div = document.getElementById('order-summary');
-    let html = '<h3>Bestelling #'+order.id+'</h3><ul>';
-    order.items.forEach(it => {
-      html += `<li>${it.name}: ${it.qty} × €${it.price.toFixed(3)} = €${(it.qty*it.price).toFixed(2)}</li>`;
-    });
-    html += `</ul><strong>Totaal: €${order.total}</strong>`;
-    div.innerHTML = html;
-    if (loggedIn) updateOperatorPanel();
-  }
-
-  document.getElementById('login-btn').onclick = () => {
-    const u = document.getElementById('username').value;
-    const p = document.getElementById('password').value;
-    if (u==='Operator' && p==='8008') {
-      loggedIn = true;
-      document.getElementById('login-status').textContent = 'Ingelogd als Operator';
-      document.getElementById('operator-panel').style.display = 'block';
-      updateOperatorPanel();
-    } else {
-      alert('Verkeerde inloggegevens');
-    }
-  };
-
-  function updateOperatorPanel() {
-    const ul = document.getElementById('orders-list');
-    ul.innerHTML = '';
-    orders.forEach(o => {
-      const li = document.createElement('li');
-      li.innerHTML = `#${o.id} – €${o.total} – status: ${o.status}
-        <button data-id="${o.id}" data-status="bereiding">In bereiding</button>
-        <button data-id="${o.id}" data-status="klaar">Klaar</button>`;
-      ul.appendChild(li);
-    });
-    ul.querySelectorAll('button').forEach(btn => {
-      btn.onclick = () => {
-        const id = parseInt(btn.dataset.id);
-        const st = btn.dataset.status;
-        const ord = orders.find(x => x.id === id);
-        ord.status = st;
+  ul.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => {
+      const id = parseInt(btn.dataset.id);
+      const status = btn.dataset.status;
+      const order = orders.find(o => o.id === id);
+      if (order) {
+        order.status = status;
+        saveOrders();
         updateOperatorPanel();
-        if (!loggedIn) return;
-        if (lastSummaryOrder && lastSummaryOrder.id === id) {
-          showSummary(ord);
-        }
-      };
-    });
-  }
+        if (lastSummaryOrder?.id === order.id) showSummary(order);
+      }
+    }
+  });
+}
 
-  let lastSummaryOrder = null;
-  function showSummary(order){
-    lastSummaryOrder = order;
-    const div = document.getElementById('order-summary');
-    let html = '<h3>Bestelling #'+order.id+'</h3>';
-    html += `<p>Status: ${order.status}</p><ul>`;
-    order.items.forEach(it => {
-      html += `<li>${it.name}: ${it.qty} × €${it.price.toFixed(3)} = €${(it.qty*it.price).toFixed(2)}</li>`;
-    });
-    html += `</ul><strong>Totaal: €${order.total}</strong>`;
-    div.innerHTML = html;
+function showSummary(order) {
+  lastSummaryOrder = order;
+  const div = document.getElementById('order-summary');
+  let html = `<h3>Bestelling #${order.id}</h3><p>Status: ${order.status}</p><ul>`;
+  order.items.forEach(i => {
+    html += `<li>${i.name}: ${i.qty} × €${i.price.toFixed(3)} = €${(i.qty * i.price).toFixed(2)}</li>`;
+  });
+  html += `</ul><strong>Totaal: €${order.total}</strong>`;
+  div.innerHTML = html;
+}
+
+let lastSummaryOrder = null;
+
+function bestel() {
+  const items = [];
+  let total = 0;
+  document.querySelectorAll('section.active .item input').forEach(inp => {
+    const qty = parseInt(inp.value) || 0;
+    const price = parseFloat(inp.dataset.price);
+    if (qty > 0) {
+      items.push({ name: inp.previousSibling.textContent.trim(), qty, price });
+      total += qty * price;
+    }
+  });
+  if (!items.length) return alert('Kies minstens één item.');
+  const order = { id: nextOrderId++, items, total: total.toFixed(2), status: 'nieuw' };
+  orders.push(order);
+  saveOrders();
+  showSummary(order);
+  if (loggedIn) updateOperatorPanel();
+}
+
+document.getElementById('start-btn').onclick = () => {
+  document.getElementById('venue').style.display = 'block';
+  document.getElementById('start-btn').style.display = 'none';
+};
+
+document.getElementById('bestel-btn').onclick = bestel;
+
+document.getElementById('login-btn').onclick = () => {
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  if (u === 'Operator' && p === '8008') {
+    loggedIn = true;
+    document.getElementById('login-status').textContent = 'Ingelogd als Operator';
+    document.getElementById('operator-panel').style.display = 'block';
+    updateOperatorPanel();
+  } else {
+    alert('Verkeerde inloggegevens.');
   }
+};
+
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  };
+});
 </script>
 </body>
 </html>
