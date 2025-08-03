@@ -1,325 +1,428 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MyOrder Restaurant</title>
+<title>Joey's Restaurant Bestelsysteem</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0; padding: 0;
-    background-color: #fffaf0;
-    color: #333;
+  .hidden { display: none; }
+  .tab-btn {
+    @apply px-4 py-2 rounded hover:bg-yellow-300 transition;
   }
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    background-color: #f8b400;
-    padding: 10px 20px;
-  }
-  header img {
-    height: 50px;
-  }
-  header button {
-    padding: 10px;
-    background-color: #fff;
-    border: 2px solid #333;
-    cursor: pointer;
-  }
-  #tabs {
-    display: flex; gap: 10px;
-    background-color: #f0f0f0;
-    padding: 10px;
-    flex-wrap: wrap;
-  }
-  .tab {
-    padding: 10px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    cursor: pointer;
-  }
-  .active {
-    background-color: #f8b400;
-    color: #fff;
-  }
-  .section {
-    display: none;
-    padding: 20px;
-  }
-  .visible {
-    display: block;
-  }
-  .item {
-    margin-bottom: 10px;
-  }
-  .item input {
-    width: 50px;
-  }
-  #orderId {
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  #orderStatus {
-    margin-top: 5px;
-    font-weight: bold;
-    color: green;
-  }
-  #statusMessage {
-    color: green;
-    font-weight: bold;
-    margin-top: 10px;
+  .tab-btn-active {
+    @apply bg-yellow-400 text-black font-bold;
   }
 </style>
 </head>
-<body>
-<header>
-  <img src="RLogo.jpg" alt="Restaurant Logo" />
-  <button onclick="openLogin()">Operator login</button>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+<header class="flex justify-between items-center p-4 bg-white shadow">
+  <img src="RLogo.jpg" alt="Logo" class="h-12" />
+  <button id="operatorLoginBtn" class="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500 transition">Operator Login</button>
 </header>
 
-<div id="tabs">
-  <div class="tab active" onclick="switchTab('drinks', this)">Dranken</div>
-  <div class="tab" onclick="switchTab('fingerfood', this)">Fingerfood</div>
-  <div class="tab" onclick="switchTab('desserts', this)">Dessert & Overige</div>
-  <div class="tab" onclick="switchTab('menus', this)">Menu’s</div>
+<!-- Gasten Bestelscherm -->
+<main id="guestView" class="flex-grow p-4 max-w-3xl mx-auto">
+  <nav class="flex space-x-2 mb-4">
+    <button class="tab-btn tab-btn-active" data-tab="drinks">Drinks</button>
+    <button class="tab-btn" data-tab="fingerfood">Fingerfood</button>
+    <button class="tab-btn" data-tab="desserts">Desserts</button>
+    <button class="tab-btn" data-tab="menus">Menus</button>
+  </nav>
+
+  <section id="drinks" class="tab-content">
+    <h2 class="text-xl font-semibold mb-2">Drinks</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <button class="bg-white p-4 rounded shadow hover:bg-yellow-100 transition" data-name="Cola" data-price="1.5">Cola - €1.50</button>
+      <button class="bg-white p-4 rounded shadow hover:bg-yellow-100 transition" data-name="Water" data-price="1.0">Water - €1.00</button>
+    </div>
+  </section>
+
+  <section id="fingerfood" class="tab-content hidden">
+    <h2 class="text-xl font-semibold mb-2">Fingerfood</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <button class="bg-white p-4 rounded shadow hover:bg-yellow-100 transition" data-name="Pringles Natural" data-price="0.1">Pringles Natural (per chip) - €0.10</button>
+      <button class="bg-white p-4 rounded shadow hover:bg-yellow-100 transition" data-name="Pringles BBQ" data-price="0.12">Pringles BBQ (per chip) - €0.12</button>
+    </div>
+  </section>
+
+  <section id="desserts" class="tab-content hidden">
+    <h2 class="text-xl font-semibold mb-2">Desserts</h2>
+    <p>Coming soon!</p>
+  </section>
+
+  <section id="menus" class="tab-content hidden">
+    <h2 class="text-xl font-semibold mb-2">Menus</h2>
+    <p>Coming soon!</p>
+  </section>
+
+  <!-- Winkelmandje icoon -->
+  <button id="cartBtn" class="fixed bottom-6 right-6 bg-yellow-400 p-5 rounded-full shadow-lg hover:bg-yellow-500 transition z-40">🛒</button>
+</main>
+
+<!-- Popup om aantal te kiezen en afrekenen/doorshoppen -->
+<div id="itemPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+  <div class="bg-white rounded-lg p-6 w-80 max-w-full shadow-lg">
+    <h3 id="popupItemName" class="text-xl font-bold mb-4"></h3>
+    <label class="block mb-2">Aantal (max 50):</label>
+    <input id="popupQty" type="number" min="1" max="50" value="1" class="border rounded px-3 py-1 w-full mb-4" />
+    <div class="flex justify-between">
+      <button id="popupAddMore" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Verder winkelen</button>
+      <button id="popupCheckout" class="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500 transition">Afrekenen</button>
+    </div>
+  </div>
 </div>
 
-<div id="drinks" class="section visible">
-  <div class="item">Cola flesje - €0.10 <input type="number" min="0" value="0" id="cola" /></div>
-  <div class="item">Water flesje - €0.50 <input type="number" min="0" value="0" id="water" /></div>
-</div>
-<div id="fingerfood" class="section">
-  <div class="item">Pringles Natural (€0.10 per chip, max 50): <input type="number" min="0" max="50" value="0" id="pringlesNatural" /></div>
-  <div class="item">Pringles BBQ (€0.20 per chip, max 50): <input type="number" min="0" max="50" value="0" id="pringlesBBQ" /></div>
-</div>
-<div id="desserts" class="section">
-  <p>Momenteel geen items.</p>
-</div>
-<div id="menus" class="section">
-  <p>Momenteel geen items.</p>
+<!-- Winkelmandje view -->
+<div id="cartView" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+  <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-lg max-h-[80vh] overflow-auto flex flex-col">
+    <h3 class="text-2xl font-bold mb-4">Winkelmandje</h3>
+    <ul id="cartItems" class="flex-grow overflow-auto space-y-2"></ul>
+    <div class="mt-4 flex justify-between">
+      <button id="placeOrderBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Bestelling plaatsen</button>
+      <button id="closeCartBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Verder winkelen</button>
+    </div>
+  </div>
 </div>
 
-<button id="orderButton">Bestellen</button>
-<div id="orderId"></div>
-<div id="orderStatus"></div>
-
-<div id="loginPanel" style="display:none; padding: 20px; background: #f8b400; color: #333;">
-  <h2>Operator login</h2>
-  <input type="text" id="username" placeholder="Gebruikersnaam" /><br /><br />
-  <input type="password" id="password" placeholder="Wachtwoord" /><br /><br />
-  <button id="loginBtn">Log in</button>
+<!-- Operator login modal -->
+<div id="operatorLoginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+  <div class="bg-white rounded-lg p-6 w-80 max-w-full shadow-lg">
+    <h3 class="text-xl font-bold mb-4">Operator Login</h3>
+    <input id="operatorUsername" placeholder="Gebruikersnaam" class="border rounded px-3 py-2 w-full mb-3" />
+    <input id="operatorPassword" type="password" placeholder="Wachtwoord" class="border rounded px-3 py-2 w-full mb-5" />
+    <div class="flex justify-end space-x-2">
+      <button id="operatorLoginCancel" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Annuleren</button>
+      <button id="operatorLoginSubmit" class="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500 transition">Login</button>
+    </div>
+  </div>
 </div>
 
-<div id="operatorPanel" style="display:none; padding: 20px;">
-  <h2>Bestellingen (live)</h2>
-  <div id="orders"></div>
-</div>
+<!-- Operator bestellingen scherm -->
+<main id="operatorView" class="hidden p-6 max-w-4xl mx-auto flex-grow flex flex-col">
+  <h2 class="text-3xl font-bold mb-6">Operator: Bestellingen Overzicht</h2>
+  <button id="operatorLogoutBtn" class="self-end bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition mb-4">Logout</button>
+  <div id="ordersList" class="flex flex-col gap-4 overflow-auto flex-grow"></div>
+
+  <!-- Bestelling detail modal -->
+  <div id="orderDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-lg max-h-[80vh] overflow-auto flex flex-col">
+      <h3 class="text-2xl font-bold mb-4">Bestelling Details</h3>
+      <div id="orderDetailsContent" class="flex-grow overflow-auto"></div>
+      <label class="block mt-4 mb-1 font-semibold">Status:</label>
+      <select id="orderStatusSelect" class="border rounded px-3 py-2 w-full mb-3">
+        <option value="pending">In Behandeling</option>
+        <option value="ready">Klaar</option>
+        <option value="delay">Kan (tijdstip) langer duren</option>
+      </select>
+      <label class="block mb-1 font-semibold">Extra tekst (optioneel):</label>
+      <textarea id="orderExtraText" rows="3" class="border rounded px-3 py-2 w-full mb-4" placeholder="Bijv. \"Wordt nu bereid door chef Mario 🍝\""></textarea>
+      <div class="flex justify-between">
+        <button id="deleteOrderBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Bestelling Verwijderen</button>
+        <button id="closeOrderDetailBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Sluiten</button>
+      </div>
+    </div>
+  </div>
+</main>
 
 <script>
-const binId = "688f6efe7b4b8670d8ac3f46";
-const apiKey = "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O";
+(() => {
+  // State
+  let cart = [];
+  let currentPopupItem = null;
+  let orders = [];
+  let selectedOrderIndex = null;
+  let operatorLoggedIn = false;
 
-let currentOrderId = null;
-let operatorLoggedIn = false;
-let pollingInterval = null;
+  // DOM Elements
+  const guestView = document.getElementById('guestView');
+  const operatorView = document.getElementById('operatorView');
+  const operatorLoginBtn = document.getElementById('operatorLoginBtn');
+  const operatorLoginModal = document.getElementById('operatorLoginModal');
+  const operatorLoginCancel = document.getElementById('operatorLoginCancel');
+  const operatorLoginSubmit = document.getElementById('operatorLoginSubmit');
+  const operatorLogoutBtn = document.getElementById('operatorLogoutBtn');
 
-function switchTab(tabId, tabElem) {
-  document.querySelectorAll('.section').forEach(sec => sec.classList.remove('visible'));
-  document.getElementById(tabId).classList.add('visible');
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-  tabElem.classList.add('active');
-}
+  const cartBtn = document.getElementById('cartBtn');
+  const cartView = document.getElementById('cartView');
+  const cartItemsList = document.getElementById('cartItems');
+  const placeOrderBtn = document.getElementById('placeOrderBtn');
+  const closeCartBtn = document.getElementById('closeCartBtn');
 
-function openLogin() {
-  document.getElementById('loginPanel').style.display = 'block';
-}
+  const itemPopup = document.getElementById('itemPopup');
+  const popupItemName = document.getElementById('popupItemName');
+  const popupQty = document.getElementById('popupQty');
+  const popupAddMore = document.getElementById('popupAddMore');
+  const popupCheckout = document.getElementById('popupCheckout');
 
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const user = document.getElementById('username').value.trim();
-  const pass = document.getElementById('password').value.trim();
-  if (user === 'Operator' && pass === '8008') {
-    operatorLoggedIn = true;
-    document.getElementById('loginPanel').style.display = 'none';
-    document.getElementById('operatorPanel').style.display = 'block';
-    startPolling();
-  } else {
-    alert('Verkeerde inloggegevens.');
+  const ordersList = document.getElementById('ordersList');
+
+  const orderDetailModal = document.getElementById('orderDetailModal');
+  const orderDetailsContent = document.getElementById('orderDetailsContent');
+  const orderStatusSelect = document.getElementById('orderStatusSelect');
+  const orderExtraText = document.getElementById('orderExtraText');
+  const deleteOrderBtn = document.getElementById('deleteOrderBtn');
+  const closeOrderDetailBtn = document.getElementById('closeOrderDetailBtn');
+
+  // Tabs guests
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  // JSONBin config
+  const JSONBIN_ID = '688f6efe7b4b8670d8ac3f46';
+  const JSONBIN_APIKEY = '$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O';
+
+  // Helper: fetch orders from JSONBin
+  async function fetchOrders() {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+        headers: { 'X-Master-Key': JSONBIN_APIKEY }
+      });
+      const data = await res.json();
+      orders = data.record.orders || [];
+      renderOrdersList();
+    } catch (e) {
+      console.error('Error fetching orders:', e);
+    }
   }
-});
 
-document.getElementById('orderButton').addEventListener('click', placeOrder);
-
-function placeOrder() {
-  const cola = parseInt(document.getElementById('cola').value) || 0;
-  const water = parseInt(document.getElementById('water').value) || 0;
-  const pringlesNatural = parseInt(document.getElementById('pringlesNatural').value) || 0;
-  const pringlesBBQ = parseInt(document.getElementById('pringlesBBQ').value) || 0;
-
-  if (cola + water + pringlesNatural + pringlesBBQ === 0) {
-    alert('Kies minstens één item.');
-    return;
+  // Helper: save orders to JSONBin
+  async function saveOrders() {
+    try {
+      await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': JSONBIN_APIKEY,
+        },
+        body: JSON.stringify({ orders }),
+      });
+    } catch (e) {
+      console.error('Error saving orders:', e);
+    }
   }
 
-  const order = {
-    id: Date.now(),
-    items: [
-      { name: 'Cola', qty: cola, price: 0.10 },
-      { name: 'Water', qty: water, price: 0.50 },
-      { name: 'Pringles Natural', qty: pringlesNatural, price: 0.10 },
-      { name: 'Pringles BBQ Saus', qty: pringlesBBQ, price: 0.20 }
-    ].filter(i => i.qty > 0),
-    status: 'Nieuw'
-  };
-
-  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-    headers: { 'X-Master-Key': apiKey }
-  })
-  .then(res => res.json())
-  .then(data => {
-    let orders = data.record || [];
-    orders.push(order);
-    return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': apiKey,
-        'X-Bin-Versioning': 'false'
-      },
-      body: JSON.stringify({ record: orders })
-    });
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('PUT request failed');
-    return res.json();
-  })
-  .then(() => {
-    currentOrderId = order.id;
-    document.getElementById('orderId').textContent = `Bestelnummer: ${order.id}`;
-    document.getElementById('orderStatus').textContent = `Status: ${order.status}`;
-    startPollingOrderStatus();
-    alert('Bestelling geplaatst!');
-  })
-  .catch(err => {
-    console.error(err);
-    alert('Er is iets misgegaan met het plaatsen van de bestelling.');
-  });
-}
-
-function startPolling() {
-  fetchOrders();
-  if (pollingInterval) clearInterval(pollingInterval);
-  pollingInterval = setInterval(fetchOrders, 2000);
-}
-
-function fetchOrders() {
-  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-    headers: { 'X-Master-Key': apiKey }
-  })
-  .then(res => res.json())
-  .then(data => {
-    const ordersDiv = document.getElementById('orders');
-    const orders = data.record || [];
-    ordersDiv.innerHTML = '';
-    orders.forEach(order => {
+  // Render orders list for operator
+  function renderOrdersList() {
+    ordersList.innerHTML = '';
+    orders.forEach((order, i) => {
       const div = document.createElement('div');
-      div.innerHTML = `
-        <strong>Bestelnummer:</strong> ${order.id}<br>
-        ${order.items.map(i => `${i.name}: ${i.qty}`).join(', ')}<br>
-        <strong>Status:</strong> ${order.status}<br>
-        <button onclick="updateStatus(${order.id}, 'In bereiding')">In bereiding</button>
-        <button onclick="updateStatus(${order.id}, 'Klaar')">Klaar</button>
-        <button onclick="deleteOrder(${order.id})">🗑️ Verwijder</button>
-        <hr>
+      div.className = 'bg-white p-4 rounded shadow cursor-pointer hover:bg-yellow-100';
+      div.textContent = `Bestelling ${i + 1} - ${order.time}`;
+      div.addEventListener('click', () => {
+        selectedOrderIndex = i;
+        openOrderDetail();
+      });
+      ordersList.appendChild(div);
+    });
+  }
+
+  // Open order detail popup for operator
+  function openOrderDetail() {
+    if (selectedOrderIndex === null) return;
+    const order = orders[selectedOrderIndex];
+    orderDetailsContent.innerHTML = order.items
+      .map(i => `<div>${i.qty}x ${i.name}</div>`).join('');
+    orderStatusSelect.value = order.status || 'pending';
+    orderExtraText.value = order.extraText || '';
+    orderDetailModal.classList.remove('hidden');
+  }
+
+  // Close order detail popup
+  function closeOrderDetail() {
+    orderDetailModal.classList.add('hidden');
+    selectedOrderIndex = null;
+  }
+
+  // Delete order
+  async function deleteOrder() {
+    if (selectedOrderIndex === null) return;
+    orders.splice(selectedOrderIndex, 1);
+    await saveOrders();
+    await fetchOrders();
+    closeOrderDetail();
+  }
+
+  // Update order status and extra text
+  async function updateOrder() {
+    if (selectedOrderIndex === null) return;
+    orders[selectedOrderIndex].status = orderStatusSelect.value;
+    orders[selectedOrderIndex].extraText = orderExtraText.value;
+    await saveOrders();
+    await fetchOrders();
+    closeOrderDetail();
+  }
+
+  // Login operator
+  function openOperatorLogin() {
+    operatorLoginModal.classList.remove('hidden');
+  }
+  function closeOperatorLogin() {
+    operatorLoginModal.classList.add('hidden');
+  }
+  function operatorLogin() {
+    const user = document.getElementById('operatorUsername').value.trim();
+    const pass = document.getElementById('operatorPassword').value.trim();
+    if (user === 'Operator' && pass === '8008') {
+      operatorLoggedIn = true;
+      guestView.classList.add('hidden');
+      operatorView.classList.remove('hidden');
+      closeOperatorLogin();
+      fetchOrders();
+    } else {
+      alert('Verkeerde gebruikersnaam of wachtwoord');
+    }
+  }
+  function operatorLogout() {
+    operatorLoggedIn = false;
+    operatorView.classList.add('hidden');
+    guestView.classList.remove('hidden');
+  }
+
+  // Tab switching
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => b.classList.remove('tab-btn-active'));
+      btn.classList.add('tab-btn-active');
+      const tab = btn.getAttribute('data-tab');
+      tabContents.forEach(c => {
+        if (c.id === tab) c.classList.remove('hidden');
+        else c.classList.add('hidden');
+      });
+    });
+  });
+
+  // Guest add to cart flow - show popup
+  function onGuestItemClick(e) {
+    const target = e.target.closest('button[data-name]');
+    if (!target) return;
+    currentPopupItem = {
+      name: target.getAttribute('data-name'),
+      price: parseFloat(target.getAttribute('data-price')),
+    };
+    popupItemName.textContent = `${currentPopupItem.name} - €${currentPopupItem.price.toFixed(2)}`;
+    popupQty.value = 1;
+    itemPopup.classList.remove('hidden');
+  }
+
+  // Add to cart helper
+  function addToCart(name, price, qty) {
+    let found = cart.find(i => i.name === name);
+    if (found) {
+      found.qty += qty;
+    } else {
+      cart.push({ name, price, qty });
+    }
+  }
+
+  // Popup buttons handlers
+  popupAddMore.addEventListener('click', () => {
+    const qty = Math.min(Math.max(parseInt(popupQty.value), 1), 50);
+    addToCart(currentPopupItem.name, currentPopupItem.price, qty);
+    itemPopup.classList.add('hidden');
+  });
+
+  popupCheckout.addEventListener('click', () => {
+    const qty = Math.min(Math.max(parseInt(popupQty.value), 1), 50);
+    addToCart(currentPopupItem.name, currentPopupItem.price, qty);
+    itemPopup.classList.add('hidden');
+    openCartView();
+  });
+
+  // Show cart view
+  function openCartView() {
+    renderCartItems();
+    cartView.classList.remove('hidden');
+  }
+  // Close cart view
+  function closeCartView() {
+    cartView.classList.add('hidden');
+  }
+
+  // Render cart items
+  function renderCartItems() {
+    cartItemsList.innerHTML = '';
+    if (cart.length === 0) {
+      cartItemsList.innerHTML = '<li>Je winkelmandje is leeg</li>';
+      placeOrderBtn.disabled = true;
+      placeOrderBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      return;
+    }
+    placeOrderBtn.disabled = false;
+    placeOrderBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+    cart.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'flex justify-between items-center';
+      li.innerHTML = `
+        <div>${item.qty}x ${item.name} (€${(item.price * item.qty).toFixed(2)})</div>
+        <button data-index="${i}" class="text-red-500 hover:text-red-700 font-bold">×</button>
       `;
-      ordersDiv.appendChild(div);
+      const btn = li.querySelector('button');
+      btn.addEventListener('click', () => {
+        cart.splice(i, 1);
+        renderCartItems();
+      });
+      cartItemsList.appendChild(li);
     });
-  });
-}
+  }
 
-function updateStatus(id, status) {
-  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-    headers: { 'X-Master-Key': apiKey }
-  })
-  .then(res => res.json())
-  .then(data => {
-    let orders = data.record || [];
-    orders = orders.map(o => {
-      if (o.id === id) o.status = status;
-      return o;
-    });
-    return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': apiKey,
-        'X-Bin-Versioning': 'false'
-      },
-      body: JSON.stringify({ record: orders })
-    });
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('PUT request failed');
-    return res.json();
-  })
-  .then(() => {
-    fetchOrders();
-  })
-  .catch(err => {
-    console.error(err);
-    alert('Fout bij status update.');
-  });
-}
+  // Place order to JSONBin
+  async function placeOrder() {
+    if (cart.length === 0) return alert('Je winkelmandje is leeg!');
+    // Create order object
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const order = {
+      time: timeStr,
+      items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty })),
+      status: 'pending',
+      extraText: ''
+    };
+    orders.push(order);
+    await saveOrders();
+    await fetchOrders();
+    cart = [];
+    closeCartView();
+    alert('Bestelling geplaatst! Bedankt.');
+  }
 
-function deleteOrder(id) {
-  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-    headers: { 'X-Master-Key': apiKey }
-  })
-  .then(res => res.json())
-  .then(data => {
-    let orders = data.record || [];
-    orders = orders.filter(o => o.id !== id);
-    return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': apiKey,
-        'X-Bin-Versioning': 'false'
-      },
-      body: JSON.stringify({ record: orders })
-    });
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('PUT request failed');
-    return res.json();
-  })
-  .then(() => {
-    fetchOrders();
-  })
-  .catch(err => {
-    console.error(err);
-    alert('Fout bij verwijderen bestelling.');
+  // Event listeners
+  document.querySelectorAll('[data-name]').forEach(btn => {
+    btn.addEventListener('click', onGuestItemClick);
   });
-}
+  cartBtn.addEventListener('click', openCartView);
+  closeCartBtn.addEventListener('click', closeCartView);
+  placeOrderBtn.addEventListener('click', placeOrder);
 
-function startPollingOrderStatus() {
-  if (currentOrderId === null) return;
-  const interval = setInterval(() => {
-    fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-      headers: { 'X-Master-Key': apiKey }
-    })
-    .then(res => res.json())
-    .then(data => {
-      const orders = data.record || [];
-      const order = orders.find(o => o.id === currentOrderId);
-      if (order) {
-        document.getElementById('orderStatus').textContent = `Status: ${order.status}`;
-        if (order.status === 'Klaar') {
-          alert('🎉 Je bestelling is klaar!');
-          clearInterval(interval);
-        }
-      }
-    });
-  }, 2000);
-}
+  operatorLoginBtn.addEventListener('click', openOperatorLogin);
+  operatorLoginCancel.addEventListener('click', closeOperatorLogin);
+  operatorLoginSubmit.addEventListener('click', operatorLogin);
+  operatorLogoutBtn.addEventListener('click', operatorLogout);
+
+  deleteOrderBtn.addEventListener('click', async () => {
+    if (confirm('Weet je zeker dat je deze bestelling wilt verwijderen?')) {
+      await deleteOrder();
+    }
+  });
+  closeOrderDetailBtn.addEventListener('click', async () => {
+    await updateOrder();
+    closeOrderDetail();
+  });
+
+  orderStatusSelect.addEventListener('change', updateOrder);
+  orderExtraText.addEventListener('input', updateOrder);
+
+  // Polling for new orders every 5 seconds
+  setInterval(() => {
+    if (operatorLoggedIn) {
+      fetchOrders();
+    }
+  }, 5000);
+
+})();
 </script>
+
 </body>
 </html>
