@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,7 +8,7 @@
 <style>
   .hidden { display: none; }
   .tab-btn {
-    @apply px-4 py-2 rounded hover:bg-yellow-300 transition;
+    @apply px-4 py-2 rounded hover:bg-yellow-300 transition cursor-pointer;
   }
   .tab-btn-active {
     @apply bg-yellow-400 text-black font-bold;
@@ -19,7 +19,10 @@
 
 <header class="flex justify-between items-center p-4 bg-white shadow">
   <img src="RLogo.jpg" alt="Logo" class="h-12" />
-  <button id="operatorLoginBtn" class="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500 transition">Operator Login</button>
+  <div>
+    <button id="operatorLoginBtn" class="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500 transition mr-2">Operator Login</button>
+    <button id="screenLoginBtn" class="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500 transition">Scherm Login</button>
+  </div>
 </header>
 
 <!-- Gasten Bestelscherm -->
@@ -79,12 +82,24 @@
   <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-lg max-h-[80vh] overflow-auto flex flex-col">
     <h3 class="text-2xl font-bold mb-4">Winkelmandje</h3>
     <ul id="cartItems" class="flex-grow overflow-auto space-y-2"></ul>
+
+    <label for="specialInstructions" class="mt-4 font-semibold">Opmerkingen / Speciale wensen (optioneel):</label>
+    <textarea id="specialInstructions" rows="3" class="border rounded px-3 py-2 w-full mb-4" placeholder="Bijv. geen peper, extra saus, etc."></textarea>
+
     <div class="mt-4 flex justify-between">
       <button id="placeOrderBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Bestelling plaatsen</button>
       <button id="closeCartBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Verder winkelen</button>
     </div>
   </div>
 </div>
+
+<!-- Keep Open view (na bestellen) -->
+<main id="keepOpenView" class="hidden flex flex-col justify-center items-center flex-grow p-4 max-w-xl mx-auto text-center">
+  <h2 class="text-3xl font-bold mb-6">Bedankt voor je bestelling!</h2>
+  <p class="mb-4 text-lg">Je bestellingnummer is:</p>
+  <p id="orderNumberDisplay" class="text-yellow-400 font-bold text-5xl mb-8"></p>
+  <p class="text-gray-700 mb-8">Laat deze website open tot uw bestelling er is.</p>
+</main>
 
 <!-- Operator login modal -->
 <div id="operatorLoginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -117,7 +132,7 @@
         <option value="delay">Kan (tijdstip) langer duren</option>
       </select>
       <label class="block mb-1 font-semibold">Extra tekst (optioneel):</label>
-      <textarea id="orderExtraText" rows="3" class="border rounded px-3 py-2 w-full mb-4" placeholder="Bijv. \"Wordt nu bereid door chef Mario 🍝\""></textarea>
+      <textarea id="orderExtraText" rows="3" class="border rounded px-3 py-2 w-full mb-4" placeholder="Bijv. 'Wordt nu bereid door chef Mario 🍝'"></textarea>
       <div class="flex justify-between">
         <button id="deleteOrderBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Bestelling Verwijderen</button>
         <button id="closeOrderDetailBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Sluiten</button>
@@ -126,29 +141,65 @@
   </div>
 </main>
 
+<!-- Scherm Account login modal -->
+<div id="screenLoginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+  <div class="bg-white rounded-lg p-6 w-80 max-w-full shadow-lg">
+    <h3 class="text-xl font-bold mb-4">Scherm Account Login</h3>
+    <input id="screenUsername" placeholder="Gebruikersnaam" class="border rounded px-3 py-2 w-full mb-3" />
+    <input id="screenPassword" type="password" placeholder="Wachtwoord" class="border rounded px-3 py-2 w-full mb-5" />
+    <div class="flex justify-end space-x-2">
+      <button id="screenLoginCancel" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">Annuleren</button>
+      <button id="screenLoginSubmit" class="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500 transition">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scherm Account view -->
+<main id="screenView" class="hidden p-6 max-w-6xl mx-auto flex-grow flex flex-col bg-gray-50">
+  <h2 class="text-4xl font-bold mb-6 text-center">Scherm Account: Bestellingen Overzicht</h2>
+  <button id="screenLogoutBtn" class="self-end bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition mb-4">Logout</button>
+  <div class="grid grid-cols-2 gap-8">
+    <section>
+      <h3 class="text-2xl font-semibold mb-4 text-yellow-500">In Behandeling</h3>
+      <div id="screenPendingOrders" class="space-y-3 bg-white p-4 rounded shadow max-h-[70vh] overflow-auto"></div>
+    </section>
+    <section>
+      <h3 class="text-2xl font-semibold mb-4 text-green-500">Klaar</h3>
+      <div id="screenReadyOrders" class="space-y-3 bg-white p-4 rounded shadow max-h-[70vh] overflow-auto"></div>
+    </section>
+  </div>
+</main>
+
 <script>
 (() => {
-  // State
+  // STATE & CONFIG
   let cart = [];
   let currentPopupItem = null;
   let orders = [];
   let selectedOrderIndex = null;
   let operatorLoggedIn = false;
+  let lastOrderNumber = null;
 
-  // DOM Elements
+  let screenLoggedIn = false;
+  let screenOrders = [];
+  let lastReadyCount = 0;
+
+  const JSONBIN_ID = '688f6efe7b4b8670d8ac3f46';
+  const JSONBIN_APIKEY = '$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O';
+
+  // DOM ELEMENTS GASTEN
   const guestView = document.getElementById('guestView');
   const operatorView = document.getElementById('operatorView');
-  const operatorLoginBtn = document.getElementById('operatorLoginBtn');
-  const operatorLoginModal = document.getElementById('operatorLoginModal');
-  const operatorLoginCancel = document.getElementById('operatorLoginCancel');
-  const operatorLoginSubmit = document.getElementById('operatorLoginSubmit');
-  const operatorLogoutBtn = document.getElementById('operatorLogoutBtn');
+  const keepOpenView = document.getElementById('keepOpenView');
+  const screenView = document.getElementById('screenView');
 
+  // GASTEN UI
   const cartBtn = document.getElementById('cartBtn');
   const cartView = document.getElementById('cartView');
   const cartItemsList = document.getElementById('cartItems');
   const placeOrderBtn = document.getElementById('placeOrderBtn');
   const closeCartBtn = document.getElementById('closeCartBtn');
+  const specialInstructionsInput = document.getElementById('specialInstructions');
 
   const itemPopup = document.getElementById('itemPopup');
   const popupItemName = document.getElementById('popupItemName');
@@ -156,8 +207,15 @@
   const popupAddMore = document.getElementById('popupAddMore');
   const popupCheckout = document.getElementById('popupCheckout');
 
-  const ordersList = document.getElementById('ordersList');
+  const orderNumberDisplay = document.getElementById('orderNumberDisplay');
 
+  // OPERATOR UI
+  const operatorLoginBtn = document.getElementById('operatorLoginBtn');
+  const operatorLoginModal = document.getElementById('operatorLoginModal');
+  const operatorLoginCancel = document.getElementById('operatorLoginCancel');
+  const operatorLoginSubmit = document.getElementById('operatorLoginSubmit');
+  const operatorLogoutBtn = document.getElementById('operatorLogoutBtn');
+  const ordersList = document.getElementById('ordersList');
   const orderDetailModal = document.getElementById('orderDetailModal');
   const orderDetailsContent = document.getElementById('orderDetailsContent');
   const orderStatusSelect = document.getElementById('orderStatusSelect');
@@ -165,15 +223,40 @@
   const deleteOrderBtn = document.getElementById('deleteOrderBtn');
   const closeOrderDetailBtn = document.getElementById('closeOrderDetailBtn');
 
-  // Tabs guests
+  // SCREEN ACCOUNT UI
+  const screenLoginBtn = document.getElementById('screenLoginBtn');
+  const screenLoginModal = document.getElementById('screenLoginModal');
+  const screenUsernameInput = document.getElementById('screenUsername');
+  const screenPasswordInput = document.getElementById('screenPassword');
+  const screenLoginCancel = document.getElementById('screenLoginCancel');
+  const screenLoginSubmit = document.getElementById('screenLoginSubmit');
+  const screenLogoutBtn = document.getElementById('screenLogoutBtn');
+  const screenPendingOrdersDiv = document.getElementById('screenPendingOrders');
+  const screenReadyOrdersDiv = document.getElementById('screenReadyOrders');
+
+  // TABS GASTEN
   const tabButtons = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
 
-  // JSONBin config
-  const JSONBIN_ID = '688f6efe7b4b8670d8ac3f46';
-  const JSONBIN_APIKEY = '$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O';
+  // SOUND (voor scherm account)
+  const soundUrl = 'Sounds/DoneSoundForScreen.mp3';
 
-  // Helper: fetch orders from JSONBin
+  // ------------- FUNCTIONS ---------------------
+
+  // TAB SWITCHING GASTEN
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => b.classList.remove('tab-btn-active'));
+      btn.classList.add('tab-btn-active');
+      const tab = btn.getAttribute('data-tab');
+      tabContents.forEach(tc => {
+        if (tc.id === tab) tc.classList.remove('hidden');
+        else tc.classList.add('hidden');
+      });
+    });
+  });
+
+  // FETCH ORDERS
   async function fetchOrders() {
     try {
       const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
@@ -182,12 +265,16 @@
       const data = await res.json();
       orders = data.record.orders || [];
       renderOrdersList();
+      if(screenLoggedIn) {
+        screenOrders = orders;
+        renderScreenOrders();
+      }
     } catch (e) {
       console.error('Error fetching orders:', e);
     }
   }
 
-  // Helper: save orders to JSONBin
+  // SAVE ORDERS
   async function saveOrders() {
     try {
       await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
@@ -203,58 +290,101 @@
     }
   }
 
-  // Render orders list for operator
-  function renderOrdersList() {
-    ordersList.innerHTML = '';
-    orders.forEach((order, i) => {
-      const div = document.createElement('div');
-      div.className = 'bg-white p-4 rounded shadow cursor-pointer hover:bg-yellow-100';
-      div.textContent = `Bestelling ${i + 1} - ${order.time}`;
-      div.addEventListener('click', () => {
-        selectedOrderIndex = i;
-        openOrderDetail();
+  // GASTEN: SETUP ITEM BUTTONS
+  function setupItemButtons() {
+    const buttons = document.querySelectorAll('[data-name]');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (operatorLoggedIn || screenLoggedIn) return; // Operator/screen mag niet bestellen
+        const item = {
+          name: btn.getAttribute('data-name'),
+          price: parseFloat(btn.getAttribute('data-price'))
+        };
+        openItemPopup(item);
       });
-      ordersList.appendChild(div);
     });
   }
 
-  // Open order detail popup for operator
-  function openOrderDetail() {
-    if (selectedOrderIndex === null) return;
-    const order = orders[selectedOrderIndex];
-    orderDetailsContent.innerHTML = order.items
-      .map(i => `<div>${i.qty}x ${i.name}</div>`).join('');
-    orderStatusSelect.value = order.status || 'pending';
-    orderExtraText.value = order.extraText || '';
-    orderDetailModal.classList.remove('hidden');
+  // ADD TO CART
+  function addToCart(item, qty) {
+    if (qty < 1 || qty > 50) return alert('Aantal moet tussen 1 en 50 zijn');
+    const existing = cart.find(i => i.name === item.name);
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      cart.push({ ...item, qty });
+    }
+    alert(`${qty}x ${item.name} toegevoegd aan winkelmandje!`);
   }
 
-  // Close order detail popup
-  function closeOrderDetail() {
-    orderDetailModal.classList.add('hidden');
-    selectedOrderIndex = null;
+  // OPEN/CLOSE ITEM POPUP
+  function openItemPopup(item) {
+    currentPopupItem = item;
+    popupItemName.textContent = item.name;
+    popupQty.value = 1;
+    itemPopup.classList.remove('hidden');
+  }
+  function closeItemPopup() {
+    itemPopup.classList.add('hidden');
   }
 
-  // Delete order
-  async function deleteOrder() {
-    if (selectedOrderIndex === null) return;
-    orders.splice(selectedOrderIndex, 1);
+  // RENDER CART ITEMS
+  function renderCartItems() {
+    cartItemsList.innerHTML = '';
+    cart.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'flex justify-between items-center bg-yellow-50 p-2 rounded';
+      li.innerHTML = `
+        <span>${item.qty}x ${item.name}</span>
+        <span>€${(item.price * item.qty).toFixed(2)}</span>
+      `;
+      cartItemsList.appendChild(li);
+    });
+  }
+
+  // OPEN/CLOSE CART VIEW
+  function openCartView() {
+    if (cart.length === 0) {
+      alert('Je winkelmandje is leeg!');
+      return;
+    }
+    renderCartItems();
+    cartView.classList.remove('hidden');
+  }
+  function closeCartView() {
+    cartView.classList.add('hidden');
+  }
+
+  // PLACE ORDER
+  async function placeOrder() {
+    if (cart.length === 0) {
+      alert('Je winkelmandje is leeg!');
+      return;
+    }
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const order = {
+      time: timeStr,
+      items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty })),
+      status: 'pending',
+      extraText: '',
+      specialInstructions: specialInstructionsInput.value.trim() || '',
+    };
+    orders.push(order);
     await saveOrders();
     await fetchOrders();
-    closeOrderDetail();
+    cart = [];
+    specialInstructionsInput.value = '';
+    closeCartView();
+
+    // Toon keepOpenView met bestelnummer (index+1)
+    lastOrderNumber = orders.length;
+    orderNumberDisplay.textContent = lastOrderNumber;
+    guestView.classList.add('hidden');
+    keepOpenView.classList.remove('hidden');
   }
 
-  // Update order status and extra text
-  async function updateOrder() {
-    if (selectedOrderIndex === null) return;
-    orders[selectedOrderIndex].status = orderStatusSelect.value;
-    orders[selectedOrderIndex].extraText = orderExtraText.value;
-    await saveOrders();
-    await fetchOrders();
-    closeOrderDetail();
-  }
-
-  // Login operator
+  // OPERATOR LOGIN FLOW
   function openOperatorLogin() {
     operatorLoginModal.classList.remove('hidden');
   }
@@ -266,9 +396,11 @@
     const pass = document.getElementById('operatorPassword').value.trim();
     if (user === 'Operator' && pass === '8008') {
       operatorLoggedIn = true;
-      guestView.classList.add('hidden');
-      operatorView.classList.remove('hidden');
       closeOperatorLogin();
+      guestView.classList.add('hidden');
+      keepOpenView.classList.add('hidden');
+      screenView.classList.add('hidden');
+      operatorView.classList.remove('hidden');
       fetchOrders();
     } else {
       alert('Verkeerde gebruikersnaam of wachtwoord');
@@ -280,127 +412,209 @@
     guestView.classList.remove('hidden');
   }
 
-  // Tab switching
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabButtons.forEach(b => b.classList.remove('tab-btn-active'));
-      btn.classList.add('tab-btn-active');
-      const tab = btn.getAttribute('data-tab');
-      tabContents.forEach(c => {
-        if (c.id === tab) c.classList.remove('hidden');
-        else c.classList.add('hidden');
-      });
-    });
-  });
-
-  // Guest add to cart flow - show popup
-  function onGuestItemClick(e) {
-    const target = e.target.closest('button[data-name]');
-    if (!target) return;
-    currentPopupItem = {
-      name: target.getAttribute('data-name'),
-      price: parseFloat(target.getAttribute('data-price')),
-    };
-    popupItemName.textContent = `${currentPopupItem.name} - €${currentPopupItem.price.toFixed(2)}`;
-    popupQty.value = 1;
-    itemPopup.classList.remove('hidden');
-  }
-
-  // Add to cart helper
-  function addToCart(name, price, qty) {
-    let found = cart.find(i => i.name === name);
-    if (found) {
-      found.qty += qty;
-    } else {
-      cart.push({ name, price, qty });
-    }
-  }
-
-  // Popup buttons handlers
-  popupAddMore.addEventListener('click', () => {
-    const qty = Math.min(Math.max(parseInt(popupQty.value), 1), 50);
-    addToCart(currentPopupItem.name, currentPopupItem.price, qty);
-    itemPopup.classList.add('hidden');
-  });
-
-  popupCheckout.addEventListener('click', () => {
-    const qty = Math.min(Math.max(parseInt(popupQty.value), 1), 50);
-    addToCart(currentPopupItem.name, currentPopupItem.price, qty);
-    itemPopup.classList.add('hidden');
-    openCartView();
-  });
-
-  // Show cart view
-  function openCartView() {
-    renderCartItems();
-    cartView.classList.remove('hidden');
-  }
-  // Close cart view
-  function closeCartView() {
-    cartView.classList.add('hidden');
-  }
-
-  // Render cart items
-  function renderCartItems() {
-    cartItemsList.innerHTML = '';
-    if (cart.length === 0) {
-      cartItemsList.innerHTML = '<li>Je winkelmandje is leeg</li>';
-      placeOrderBtn.disabled = true;
-      placeOrderBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  // RENDER ORDERS LIST OPERATOR
+  function renderOrdersList() {
+    if (!operatorLoggedIn) return;
+    ordersList.innerHTML = '';
+    if (orders.length === 0) {
+      ordersList.innerHTML = '<p class="italic text-gray-500">Geen bestellingen</p>';
       return;
     }
-    placeOrderBtn.disabled = false;
-    placeOrderBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-
-    cart.forEach((item, i) => {
-      const li = document.createElement('li');
-      li.className = 'flex justify-between items-center';
-      li.innerHTML = `
-        <div>${item.qty}x ${item.name} (€${(item.price * item.qty).toFixed(2)})</div>
-        <button data-index="${i}" class="text-red-500 hover:text-red-700 font-bold">×</button>
+    orders.forEach((order, i) => {
+      const div = document.createElement('div');
+      div.className = 'bg-yellow-50 p-4 rounded shadow cursor-pointer hover:bg-yellow-100 flex justify-between items-center';
+      div.innerHTML = `
+        <div>Bestelling #${i + 1} - ${order.time}</div>
+        <button class="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500 transition text-sm">Bekijk</button>
       `;
-      const btn = li.querySelector('button');
-      btn.addEventListener('click', () => {
-        cart.splice(i, 1);
-        renderCartItems();
+      div.querySelector('button').addEventListener('click', e => {
+        e.stopPropagation();
+        openOrderDetail(i);
       });
-      cartItemsList.appendChild(li);
+      ordersList.appendChild(div);
     });
   }
 
-  // Place order to JSONBin
-  async function placeOrder() {
-    if (cart.length === 0) return alert('Je winkelmandje is leeg!');
-    // Create order object
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-    const order = {
-      time: timeStr,
-      items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty })),
-      status: 'pending',
-      extraText: ''
-    };
-    orders.push(order);
-    await saveOrders();
-    await fetchOrders();
-    cart = [];
-    closeCartView();
-    alert('Bestelling geplaatst! Bedankt.');
+  // OPEN ORDER DETAIL MODAL
+  function openOrderDetail(index) {
+    selectedOrderIndex = index;
+    const order = orders[index];
+    orderDetailsContent.innerHTML = '';
+    order.items.forEach(item => {
+      const p = document.createElement('p');
+      p.textContent = `${item.qty}x ${item.name} - €${(item.price * item.qty).toFixed(2)}`;
+      orderDetailsContent.appendChild(p);
+    });
+    if(order.specialInstructions) {
+      const sp = document.createElement('p');
+      sp.textContent = `Speciale instructies: ${order.specialInstructions}`;
+      sp.className = 'italic mt-2 text-gray-600';
+      orderDetailsContent.appendChild(sp);
+    }
+    orderStatusSelect.value = order.status || 'pending';
+    orderExtraText.value = order.extraText || '';
+    orderDetailModal.classList.remove('hidden');
   }
 
-  // Event listeners
-  document.querySelectorAll('[data-name]').forEach(btn => {
-    btn.addEventListener('click', onGuestItemClick);
-  });
+  // CLOSE ORDER DETAIL MODAL
+  async function closeOrderDetail() {
+    orderDetailModal.classList.add('hidden');
+    selectedOrderIndex = null;
+  }
+
+  // UPDATE ORDER STATUS & EXTRA TEXT
+  async function updateOrder() {
+    if (selectedOrderIndex === null) return;
+    const order = orders[selectedOrderIndex];
+    order.status = orderStatusSelect.value;
+    order.extraText = orderExtraText.value.trim();
+    await saveOrders();
+    await fetchOrders();
+  }
+
+  // DELETE ORDER
+  async function deleteOrder() {
+    if (selectedOrderIndex === null) return;
+    orders.splice(selectedOrderIndex, 1);
+    await saveOrders();
+    await fetchOrders();
+    closeOrderDetail();
+  }
+
+  // SCREEN ACCOUNT LOGIN FLOW
+  function openScreenLogin() {
+    screenLoginModal.classList.remove('hidden');
+  }
+  function closeScreenLogin() {
+    screenLoginModal.classList.add('hidden');
+  }
+  function screenLogin() {
+    const user = screenUsernameInput.value.trim();
+    const pass = screenPasswordInput.value.trim();
+    if (user === 'OperatorScreen' && pass === '8008') {
+      screenLoggedIn = true;
+      closeScreenLogin();
+      guestView.classList.add('hidden');
+      operatorView.classList.add('hidden');
+      keepOpenView.classList.add('hidden');
+      screenView.classList.remove('hidden');
+      fetchScreenOrders();
+      startScreenPolling();
+    } else {
+      alert('Verkeerde gebruikersnaam of wachtwoord');
+    }
+  }
+  function screenLogout() {
+    screenLoggedIn = false;
+    screenView.classList.add('hidden');
+    guestView.classList.remove('hidden');
+    stopScreenPolling();
+  }
+
+  // FETCH ORDERS FOR SCREEN ACCOUNT
+  async function fetchScreenOrders() {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+        headers: { 'X-Master-Key': JSONBIN_APIKEY }
+      });
+      const data = await res.json();
+      screenOrders = data.record.orders || [];
+      renderScreenOrders();
+    } catch (e) {
+      console.error('Error fetching orders for screen:', e);
+    }
+  }
+
+  // RENDER SCREEN ORDERS SPLIT BY STATUS
+  function renderScreenOrders() {
+    if (!screenLoggedIn) return;
+    screenPendingOrdersDiv.innerHTML = '';
+    screenReadyOrdersDiv.innerHTML = '';
+
+    const pending = screenOrders.filter(o => o.status === 'pending');
+    const ready = screenOrders.filter(o => o.status === 'ready');
+
+    // Check nieuw klaar orders voor geluid
+    if (ready.length > lastReadyCount) {
+      playDoneSound();
+    }
+    lastReadyCount = ready.length;
+
+    if (pending.length === 0) {
+      screenPendingOrdersDiv.innerHTML = '<p class="text-gray-500 italic">Geen bestellingen in behandeling</p>';
+    } else {
+      pending.forEach((order, i) => {
+        const div = document.createElement('div');
+        div.className = 'p-3 bg-yellow-100 rounded shadow text-xl font-semibold';
+        div.textContent = `#${i + 1} - ${order.time}`;
+        screenPendingOrdersDiv.appendChild(div);
+      });
+    }
+
+    if (ready.length === 0) {
+      screenReadyOrdersDiv.innerHTML = '<p class="text-gray-500 italic">Geen bestellingen klaar</p>';
+    } else {
+      ready.forEach((order, i) => {
+        const div = document.createElement('div');
+        div.className = 'p-3 bg-green-100 rounded shadow text-xl font-semibold';
+        div.textContent = `#${i + 1} - ${order.time}`;
+        screenReadyOrdersDiv.appendChild(div);
+      });
+    }
+  }
+
+  // SPEEL GELUID
+  function playDoneSound() {
+    const audio = new Audio(soundUrl);
+    audio.play().catch(e => console.warn('Sound play failed:', e));
+  }
+
+  // POLLING
+  let pollingInterval;
+  let screenPollingInterval;
+
+  function startPolling() {
+    pollingInterval = setInterval(fetchOrders, 5000);
+  }
+  function stopPolling() {
+    clearInterval(pollingInterval);
+  }
+  function startScreenPolling() {
+    screenPollingInterval = setInterval(fetchScreenOrders, 5000);
+  }
+  function stopScreenPolling() {
+    clearInterval(screenPollingInterval);
+  }
+
+  // SETUP ITEM BUTTONS INIT
+  setupItemButtons();
+
+  // EVENT LISTENERS GASTEN
   cartBtn.addEventListener('click', openCartView);
   closeCartBtn.addEventListener('click', closeCartView);
   placeOrderBtn.addEventListener('click', placeOrder);
 
+  popupAddMore.addEventListener('click', () => {
+    closeItemPopup();
+  });
+  popupCheckout.addEventListener('click', () => {
+    const qty = parseInt(popupQty.value, 10);
+    if (isNaN(qty) || qty < 1 || qty > 50) return alert('Aantal moet tussen 1 en 50 zijn');
+    addToCart(currentPopupItem, qty);
+    closeItemPopup();
+    openCartView();
+  });
+
+  // OPERATOR LOGIN EVENTS
   operatorLoginBtn.addEventListener('click', openOperatorLogin);
   operatorLoginCancel.addEventListener('click', closeOperatorLogin);
   operatorLoginSubmit.addEventListener('click', operatorLogin);
-  operatorLogoutBtn.addEventListener('click', operatorLogout);
+  operatorLogoutBtn.addEventListener('click', () => {
+    operatorLogout();
+    stopPolling();
+  });
 
+  // OPERATOR ORDER DETAIL EVENTS
   deleteOrderBtn.addEventListener('click', async () => {
     if (confirm('Weet je zeker dat je deze bestelling wilt verwijderen?')) {
       await deleteOrder();
@@ -410,19 +624,27 @@
     await updateOrder();
     closeOrderDetail();
   });
-
   orderStatusSelect.addEventListener('change', updateOrder);
   orderExtraText.addEventListener('input', updateOrder);
 
-  // Polling for new orders every 5 seconds
+  // SCREEN LOGIN EVENTS
+  screenLoginBtn.addEventListener('click', openScreenLogin);
+  screenLoginCancel.addEventListener('click', closeScreenLogin);
+  screenLoginSubmit.addEventListener('click', screenLogin);
+  screenLogoutBtn.addEventListener('click', () => {
+    screenLogout();
+    stopScreenPolling();
+  });
+
+  // Start polling als operator ingelogd is
   setInterval(() => {
-    if (operatorLoggedIn) {
-      fetchOrders();
-    }
+    if (operatorLoggedIn) fetchOrders();
   }, 5000);
+
+  // Init fetch orders
+  fetchOrders();
 
 })();
 </script>
-
 </body>
 </html>
