@@ -1,412 +1,346 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Restaurant Bestelsysteem</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f5f5;
-    margin: 0; padding: 0;
-  }
-  header {
-    background: #333;
-    color: #fff;
-    padding: 15px 20px;
-    text-align: center;
-    font-size: 1.7rem;
-    font-weight: 700;
-    user-select: none;
-  }
-  #logo {
-    height: 40px;
-    vertical-align: middle;
-    margin-right: 10px;
-  }
-  main {
-    max-width: 900px;
-    margin: 25px auto;
-    background: #fff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-  }
-  #tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  #tabs button {
-    flex: 1;
-    padding: 10px 0;
-    border: none;
-    background: #ddd;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 6px 6px 0 0;
-    transition: background 0.3s;
-  }
-  #tabs button.active {
-    background: #27ae60;
-    color: white;
-  }
-  .tab-content {
-    display: none;
-  }
-  .tab-content.active {
-    display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
-    gap: 15px;
-  }
-  .menu-item {
-    background: #e9f5e9;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .menu-item:hover {
-    background: #c3e6c3;
-  }
-  .menu-item .name {
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .menu-item .price {
-    font-size: 1rem;
-    color: #333;
-  }
-  .menu-item .add-btn {
-    margin-top: 10px;
-    background: #27ae60;
-    border: none;
-    color: white;
-    font-weight: 700;
-    padding: 6px 0;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  .menu-item .add-btn:hover {
-    background: #1e8449;
-  }
-  #cartBtn {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    background: #27ae60;
-    border: none;
-    color: white;
-    padding: 12px 18px;
-    font-weight: 700;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 2px 12px rgba(39, 174, 96, 0.5);
-    z-index: 999;
-  }
-  #cartCount {
-    background: #fff;
-    color: #27ae60;
-    font-weight: 700;
-    border-radius: 50%;
-    padding: 4px 9px;
-    margin-left: 8px;
-  }
-  .modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  .modal.active {
-    display: flex;
-  }
-  .modal-content {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px 30px;
-    width: 90%;
-    max-width: 450px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-  }
-  .modal-content h2 {
-    margin-top: 0;
-  }
-  .modal-content label {
-    display: block;
-    margin: 12px 0 6px;
-    font-weight: 600;
-  }
-  .modal-content input[type=number], 
-  .modal-content input[type=text], 
-  .modal-content textarea, 
-  .modal-content select {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    resize: vertical;
-  }
-  .modal-content textarea {
-    min-height: 60px;
-  }
-  .modal-footer {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-  }
-  .btn {
-    background: #27ae60;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background 0.3s;
-  }
-  .btn.cancel {
-    background: #aaa;
-  }
-  .btn:hover {
-    background: #1e8449;
-  }
-  .btn.cancel:hover {
-    background: #888;
-  }
-  #keepOpenScreen {
-    text-align: center;
-  }
-  #keepOpenScreen p {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-  }
-  #orderNumberDisplay {
-    font-weight: 900;
-    font-size: 3rem;
-    color: #27ae60;
-    margin-bottom: 15px;
-  }
-  #operatorView {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 20px;
-    background: #e6ffe6;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,128,0,0.1);
-    display: none;
-  }
-  #operatorOrders {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #27ae60;
-    border-radius: 6px;
-    padding: 12px;
-  }
-  .order-item {
-    background: white;
-    margin-bottom: 10px;
-    border-left: 6px solid #27ae60;
-    padding: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .order-item:hover {
-    background: #c3f0c3;
-  }
-  #orderDetailModal p {
-    margin: 6px 0;
-  }
-  #orderStatusSelect, #extraText {
-    width: 100%;
-    margin-top: 6px;
-    margin-bottom: 15px;
-  }
-  #screenView {
-    max-width: 650px; 
-    margin: 30px auto; 
-    background: #fff; 
-    padding: 20px; 
-    border-radius: 10px; 
-    box-shadow:0 4px 12px rgba(0,0,0,0.1); 
-    display:none;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 20px;
-    color: #333;
-  }
-  #screenPendingOrders, #screenReadyOrders {
-    flex: 1;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: inset 0 0 10px rgba(150, 75, 0, 0.4);
-    min-height: 300px;
-    font-size: 1.5rem;
-    font-weight: 700;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  #screenPendingOrders {
-    color: #6f4e37; /* bruin */
-    background-color: #f3e9dc;
-  }
-  #screenReadyOrders {
-    color: #2e7d32; /* groen */
-    background-color: #d7f0d7;
-  }
-  #screenPendingOrders div.order-item, #screenReadyOrders div.order-item {
-    background: transparent;
-    border: 2px solid currentColor;
-    border-radius: 6px;
-    padding: 12px 18px;
-    text-align: center;
-    min-width: 60px;
-    cursor: default;
-    user-select: none;
-  }
-  #loginButton, #screenLoginButton {
-    position: fixed;
-    top: 15px;
-    background: #27ae60;
-    border: none;
-    color: white;
-    padding: 12px 18px;
-    font-weight: 700;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 2px 12px rgba(39, 174, 96, 0.5);
-    z-index: 999;
-    user-select: none;
-  }
-  #loginButton {
-    right: 90px;
-  }
-  #screenLoginButton {
-    right: 15px;
-  }
-  #languageSelect {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    padding: 6px 10px;
-    font-weight: 700;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background: white;
-    user-select: none;
-  }
-  #operatorLogoutBtn, #screenLogoutBtn {
-    position: fixed;
-    bottom: 15px;
-    background: #e74c3c;
-    border: none;
-    color: white;
-    padding: 12px 18px;
-    font-weight: 700;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 2px 12px rgba(231, 76, 60, 0.7);
-    z-index: 999;
-    user-select: none;
-  }
-  #operatorLogoutBtn {
-    left: 15px;
-  }
-  #screenLogoutBtn {
-    left: 90px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Restaurant Bestelsysteem</title>
+  <style>
+    /* Basis styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: #333;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: normal;
+      font-size: 1.5rem;
+    }
+    main {
+      flex-grow: 1;
+      padding: 20px;
+    }
+    /* Tabs */
+    #tabs {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    #tabs button {
+      background: #ddd;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    #tabs button.active {
+      background: #333;
+      color: white;
+    }
+    /* Tab content */
+    .tab-content {
+      display: none;
+      background: white;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 5px 5px 5px;
+      min-height: 200px;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    /* Menu item styling */
+    .menu-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .menu-item button {
+      background: #4CAF50;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .menu-item button:hover {
+      background: #45a049;
+    }
+    /* Winkelmandje knop */
+    #cartBtn {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #e91e63;
+      border: none;
+      color: white;
+      padding: 15px 20px;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+    }
+    #cartCount {
+      background: white;
+      color: #e91e63;
+      border-radius: 50%;
+      padding: 2px 7px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      min-width: 24px;
+      text-align: center;
+    }
+    /* Modal styling */
+    .modal {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-content h2, .modal-content h3 {
+      margin-top: 0;
+    }
+    .modal-footer {
+      margin-top: 15px;
+      text-align: right;
+    }
+    .modal-footer .btn {
+      margin-left: 10px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #45a049;
+    }
+    .btn.cancel {
+      background: #f44336;
+    }
+    .btn.cancel:hover {
+      background: #d32f2f;
+    }
+    /* Operator orders */
+    #operatorOrders .order-item {
+      border-bottom: 1px solid #ccc;
+      padding: 8px 0;
+      cursor: pointer;
+    }
+    #operatorOrders .order-item:hover {
+      background: #f0f0f0;
+    }
+    /* Screen view */
+    #screenView {
+      display: none;
+      flex-direction: row;
+      justify-content: space-around;
+      padding: 20px;
+      gap: 40px;
+      flex-wrap: wrap;
+      background: #222;
+      color: white;
+      min-height: 80vh;
+    }
+    #screenView > div {
+      flex: 1 1 40%;
+      background: #333;
+      border-radius: 10px;
+      padding: 15px;
+      min-width: 250px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    #screenView h3 {
+      margin-top: 0;
+      border-bottom: 2px solid #aaa;
+      padding-bottom: 10px;
+    }
+    .order-item-screen {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      padding: 10px;
+      color: white;
+    }
+    .order-pending {
+      background: #a0522d; /* bruin */
+      text-align: left;
+    }
+    .order-ready {
+      background: #2e8b57; /* groen */
+      text-align: right;
+    }
+    /* Login pages styling */
+    #loginPages {
+      display: none;
+      min-height: 80vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-page {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      width: 320px;
+    }
+    .login-page h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .login-page label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .login-page input {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .login-page button {
+      width: 100%;
+      font-size: 1rem;
+    }
+    /* Responsive */
+    @media(max-width: 700px) {
+      #screenView {
+        flex-direction: column;
+      }
+      #screenView > div {
+        max-width: 100%;
+      }
+      #tabs {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
 </head>
 <body>
 
 <header>
-  <img src="RLogo.jpg" alt="Restaurant Logo" id="logo" />
-  Restaurant Bestelsysteem
+  <h1>RLogo Restaurant</h1>
+  <nav>
+    <a href="#/" style="color:white; text-decoration:none; font-weight:bold; margin-right: 15px;">Bestellen</a>
+    <a href="#/operatorlogin" style="color:white; text-decoration:none; font-weight:bold; margin-right: 15px;">Operator Login</a>
+    <a href="#/screenlogin" style="color:white; text-decoration:none; font-weight:bold;">Scherm Login</a>
+  </nav>
 </header>
 
-<select id="languageSelect" title="Kies taal">
-  <option value="en">English</option>
-  <option value="nl">Nederlands</option>
-</select>
-
-<button id="loginButton">Operator Login</button>
-<button id="screenLoginButton">Scherm Login</button>
-<button id="cartBtn">Winkelmandje (<span id="cartCount">0</span>)</button>
-
-<button id="operatorLogoutBtn" style="display:none;">Operator Uitloggen</button>
-<button id="screenLogoutBtn" style="display:none;">Scherm Uitloggen</button>
-
-<main>
-
+<!-- Main bestel systeem -->
+<main id="mainView">
   <div id="tabs">
-    <button class="tab-btn active" data-tab="drinks">Dranken</button>
-    <button class="tab-btn" data-tab="fingerfood">Fingerfood</button>
-    <button class="tab-btn" data-tab="desserts">Desserts</button>
-    <button class="tab-btn" data-tab="menus">Menu’s</button>
+    <button class="active" data-tab="drinksTab">Dranken</button>
+    <button data-tab="fingerfoodTab">Fingerfood</button>
+    <button data-tab="dessertsTab">Desserts</button>
+    <button data-tab="menusTab">Menu's</button>
   </div>
 
-  <section id="drinks" class="tab-content active">
-    <div class="menu-item" data-name="Cola Flesje" data-price="1.50">
-      <div class="name">Cola Flesje</div>
-      <div class="price">€1.50</div>
-      <button class="add-btn" onclick="addToCart(event)">Toevoegen</button>
+  <section id="drinksTab" class="tab-content active">
+    <div class="menu-item" data-name="Cola" data-price="1.50">
+      <div>Cola - €1.50</div>
+      <button onclick="addToCart(event)">Voeg toe</button>
     </div>
-    <div class="menu-item" data-name="Water Flesje" data-price="1.00">
-      <div class="name">Water Flesje</div>
-      <div class="price">€1.00</div>
-      <button class="add-btn" onclick="addToCart(event)">Toevoegen</button>
+    <div class="menu-item" data-name="Water" data-price="1.00">
+      <div>Water - €1.00</div>
+      <button onclick="addToCart(event)">Voeg toe</button>
     </div>
   </section>
 
-  <section id="fingerfood" class="tab-content">
+  <section id="fingerfoodTab" class="tab-content">
     <div class="menu-item" data-name="Pringles Natural" data-price="0.10">
-      <div class="name">Pringles Natural</div>
-      <div class="price">€0.10 per chip</div>
-      <button class="add-btn" onclick="openAmountPopup(event)">Aantal kiezen</button>
+      <div>Pringles Natural - €0.10 per chip</div>
+      <button onclick="openAmountPopup(event)">Aantal kiezen</button>
     </div>
-    <div class="menu-item" data-name="Pringles BBQ" data-price="0.15">
-      <div class="name">Pringles BBQ</div>
-      <div class="price">€0.15 per chip</div>
-      <button class="add-btn" onclick="openAmountPopup(event)">Aantal kiezen</button>
+    <div class="menu-item" data-name="Pringles BBQ-saus" data-price="0.12">
+      <div>Pringles BBQ-saus - €0.12 per chip</div>
+      <button onclick="openAmountPopup(event)">Aantal kiezen</button>
     </div>
   </section>
 
-  <section id="desserts" class="tab-content">
-    <div class="menu-item" data-name="Chocoladecake" data-price="2.50">
-      <div class="name">Chocoladecake</div>
-      <div class="price">€2.50</div>
-      <button class="add-btn" onclick="addToCart(event)">Toevoegen</button>
+  <section id="dessertsTab" class="tab-content">
+    <div class="menu-item" data-name="Chocolade Taart" data-price="2.50">
+      <div>Chocolade Taart - €2.50</div>
+      <button onclick="addToCart(event)">Voeg toe</button>
+    </div>
+    <div class="menu-item" data-name="Vanille Ijs" data-price="2.00">
+      <div>Vanille Ijs - €2.00</div>
+      <button onclick="addToCart(event)">Voeg toe</button>
     </div>
   </section>
 
-  <section id="menus" class="tab-content">
-    <div class="menu-item" data-name="Menu 1" data-price="8.00">
-      <div class="name">Menu 1</div>
-      <div class="price">€8.00</div>
-      <button class="add-btn" onclick="addToCart(event)">Toevoegen</button>
+  <section id="menusTab" class="tab-content">
+    <div class="menu-item" data-name="Menu Kinder" data-price="5.00">
+      <div>Menu Kinder - €5.00</div>
+      <button onclick="addToCart(event)">Voeg toe</button>
+    </div>
+    <div class="menu-item" data-name="Menu Volwassen" data-price="9.00">
+      <div>Menu Volwassen - €9.00</div>
+      <button onclick="addToCart(event)">Voeg toe</button>
     </div>
   </section>
-
 </main>
 
+<!-- Winkelmandje knop -->
+<button id="cartBtn" aria-label="Winkelmandje">
+  🛒 <span id="cartCount">0</span>
+</button>
+
+<!-- Modals -->
+
+<!-- Aantal chips modal -->
 <div class="modal" id="amountModal">
   <div class="modal-content">
-    <h2>Aantal kiezen</h2>
-    <label for="amountInput">Aantal (max 50):</label>
+    <h2>Kies aantal chips</h2>
     <input type="number" id="amountInput" min="1" max="50" value="1" />
     <div class="modal-footer">
       <button class="btn" onclick="confirmAmount()">Bevestigen</button>
@@ -415,6 +349,7 @@
   </div>
 </div>
 
+<!-- Winkelmandje modal -->
 <div class="modal" id="cartModal">
   <div class="modal-content">
     <h2>Winkelmandje</h2>
@@ -428,6 +363,7 @@
   </div>
 </div>
 
+<!-- Bestelling geplaatst scherm -->
 <div class="modal" id="keepOpenScreen">
   <div class="modal-content" style="text-align:center;">
     <p>Uw bestelling is geplaatst! Uw bestelnummer is:</p>
@@ -437,28 +373,16 @@
   </div>
 </div>
 
-<div class="modal" id="loginModal">
-  <div class="modal-content">
-    <h2>Operator Login</h2>
-    <label for="loginUser">Gebruikersnaam:</label>
-    <input type="text" id="loginUser" autocomplete="username" />
-    <label for="loginPass">Wachtwoord:</label>
-    <input type="password" id="loginPass" autocomplete="current-password" />
-    <div class="modal-footer">
-      <button class="btn" onclick="operatorLogin()">Inloggen</button>
-      <button class="btn cancel" onclick="closeLogin()">Annuleren</button>
-    </div>
-  </div>
-</div>
-
-<div id="operatorView">
+<!-- Operator view -->
+<div id="operatorView" style="display:none; padding: 20px;">
   <h2>Operator Bestellingen</h2>
   <div id="operatorOrders">Geen bestellingen.</div>
   <div class="modal-footer" style="margin-top:20px;">
-    <button class="btn" onclick="logoutOperator()" id="operatorLogoutBtn">Uitloggen</button>
+    <button class="btn cancel" onclick="logoutOperator()" id="operatorLogoutBtn">Uitloggen</button>
   </div>
 </div>
 
+<!-- Order detail modal -->
 <div class="modal" id="orderDetailModal">
   <div class="modal-content">
     <h3>Bestelling Details</h3>
@@ -479,21 +403,29 @@
   </div>
 </div>
 
-<div class="modal" id="screenLoginModal">
-  <div class="modal-content">
+<!-- Scherm account login pagina -->
+<div id="loginPages" style="display:none; flex-direction: column; align-items: center;">
+  <div id="operatorLoginPage" class="login-page" style="display:none;">
+    <h2>Operator Login</h2>
+    <label for="loginUser">Gebruikersnaam:</label>
+    <input type="text" id="loginUser" autocomplete="username" />
+    <label for="loginPass">Wachtwoord:</label>
+    <input type="password" id="loginPass" autocomplete="current-password" />
+    <button class="btn" onclick="operatorLogin()">Inloggen</button>
+  </div>
+  <div id="screenLoginPage" class="login-page" style="display:none; margin-top: 40px;">
     <h2>Scherm Account Login</h2>
     <label for="screenUser">Gebruikersnaam:</label>
     <input type="text" id="screenUser" autocomplete="username" />
     <label for="screenPass">Wachtwoord:</label>
     <input type="password" id="screenPass" autocomplete="current-password" />
-    <div class="modal-footer">
-      <button class="btn" onclick="screenLogin()">Inloggen</button>
-      <button class="btn cancel" onclick="closeScreenLogin()">Annuleren</button>
-    </div>
+    <button class="btn" onclick="screenLogin()">Inloggen</button>
   </div>
+  <button class="btn cancel" style="margin-top:40px;" onclick="backToMain()">Terug naar Bestellen</button>
 </div>
 
-<div id="screenView">
+<!-- Scherm account view -->
+<div id="screenView" style="display:none; flex-direction: row; justify-content: space-around; padding: 20px; gap: 40px; flex-wrap: wrap; background: #222; color: white; min-height: 80vh;">
   <div>
     <h3>In Behandeling</h3>
     <div id="screenPendingOrders">Laden...</div>
@@ -502,7 +434,7 @@
     <h3>Klaar</h3>
     <div id="screenReadyOrders">Laden...</div>
   </div>
-  <button class="btn" style="margin-top:15px;" onclick="screenLogout()" id="screenLogoutBtn">Uitloggen Scherm</button>
+  <button class="btn cancel" style="margin-top:15px;" onclick="screenLogout()" id="screenLogoutBtn">Uitloggen Scherm</button>
 </div>
 
 <audio id="doneSound" src="Sounds/DoneSoundForScreen.mp3" preload="auto"></audio>
@@ -533,106 +465,152 @@
   const orderNumberDisplay = document.getElementById('orderNumberDisplay');
   const orderNotes = document.getElementById('orderNotes');
 
-  const loginButton = document.getElementById('loginButton');
-  const loginModal = document.getElementById('loginModal');
-  const loginUser = document.getElementById('loginUser');
-  const loginPass = document.getElementById('loginPass');
+  const loginPages = document.getElementById('loginPages');
+  const operatorLoginPage = document.getElementById('operatorLoginPage');
+  const screenLoginPage = document.getElementById('screenLoginPage');
+
+  const mainView = document.getElementById('mainView');
   const operatorView = document.getElementById('operatorView');
   const operatorOrdersDiv = document.getElementById('operatorOrders');
-  const operatorLogoutBtn = document.getElementById('operatorLogoutBtn');
-
   const orderDetailModal = document.getElementById('orderDetailModal');
   const orderDetailContent = document.getElementById('orderDetailContent');
   const orderStatusSelect = document.getElementById('orderStatusSelect');
-  const extraText = document.getElementById('extraText');
+  const extraTextInput = document.getElementById('extraText');
 
-  const screenLoginButton = document.getElementById('screenLoginButton');
-  const screenLoginModal = document.getElementById('screenLoginModal');
-  const screenUser = document.getElementById('screenUser');
-  const screenPass = document.getElementById('screenPass');
   const screenView = document.getElementById('screenView');
-  const screenPendingOrders = document.getElementById('screenPendingOrders');
-  const screenReadyOrders = document.getElementById('screenReadyOrders');
-  const screenLogoutBtn = document.getElementById('screenLogoutBtn');
+  const screenPendingOrdersDiv = document.getElementById('screenPendingOrders');
+  const screenReadyOrdersDiv = document.getElementById('screenReadyOrders');
+
   const doneSound = document.getElementById('doneSound');
 
-  const languageSelect = document.getElementById('languageSelect');
+  // Helpers
 
-  // Taal opslaan/laden
-  function loadLanguage() {
-    const saved = localStorage.getItem('language');
-    if(saved) {
-      language = saved;
-      languageSelect.value = language;
+  function showView(viewName) {
+    // Verberg alles eerst
+    mainView.style.display = 'none';
+    operatorView.style.display = 'none';
+    loginPages.style.display = 'none';
+    screenView.style.display = 'none';
+
+    // Toon wat nodig is
+    if (viewName === 'main') {
+      mainView.style.display = 'block';
+      cartBtn.style.display = 'flex';
+    } else if (viewName === 'operatorLogin') {
+      loginPages.style.display = 'flex';
+      operatorLoginPage.style.display = 'block';
+      screenLoginPage.style.display = 'none';
+      cartBtn.style.display = 'none';
+    } else if (viewName === 'screenLogin') {
+      loginPages.style.display = 'flex';
+      operatorLoginPage.style.display = 'none';
+      screenLoginPage.style.display = 'block';
+      cartBtn.style.display = 'none';
+    } else if (viewName === 'operatorView') {
+      operatorView.style.display = 'block';
+      cartBtn.style.display = 'none';
+    } else if (viewName === 'screenView') {
+      screenView.style.display = 'flex';
+      cartBtn.style.display = 'none';
     }
   }
-  function saveLanguage() {
-    localStorage.setItem('language', language);
-  }
-  languageSelect.addEventListener('change', () => {
-    language = languageSelect.value;
-    saveLanguage();
-  });
-  loadLanguage();
 
-  // Tabs
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
+  // Hash-based routing
+
+  function handleRoute() {
+    const hash = location.hash || '#/';
+    if (hash === '#/' || hash === '#') {
+      // hoofd bestel scherm
+      showView('main');
+    } else if (hash === '#/operatorlogin') {
+      showView('operatorLogin');
+    } else if (hash === '#/operatorview') {
+      if (loggedInOperator) {
+        showView('operatorView');
+      } else {
+        location.hash = '#/operatorlogin';
+      }
+    } else if (hash === '#/screenlogin') {
+      showView('screenLogin');
+    } else if (hash === '#/screenview') {
+      if (loggedInScreen) {
+        showView('screenView');
+      } else {
+        location.hash = '#/screenlogin';
+      }
+    } else {
+      // onbekende route → fallback naar hoofd
+      location.hash = '#/';
+    }
+  }
+  window.addEventListener('hashchange', handleRoute);
+
+  // Tabs switching
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-      const target = tab.dataset.tab;
+      const target = btn.dataset.tab;
       document.getElementById(target).classList.add('active');
     });
   });
 
-  // Winkelmandje functies
-  function updateCartCount() {
-    let totalCount = cart.reduce((acc, i) => acc + i.amount, 0);
-    cartCount.textContent = totalCount;
-  }
-
+  // Cart logic
   function addToCart(event) {
     const itemDiv = event.target.closest('.menu-item');
     const name = itemDiv.dataset.name;
     const price = parseFloat(itemDiv.dataset.price);
-
-    if(name.toLowerCase().includes('pringles')) {
+    if (name.toLowerCase().includes('pringles')) {
       openAmountPopup(event);
-      currentAmountItem = {name, price};
       return;
     }
-
-    let found = cart.find(i => i.name === name);
-    if(found) found.amount++;
-    else cart.push({name, price, amount: 1});
+    // check if already in cart: +1
+    const found = cart.find(i => i.name === name);
+    if (found) {
+      found.amount++;
+    } else {
+      cart.push({name, price, amount:1});
+    }
     updateCartCount();
   }
 
+  // Amount popup for pringles
   function openAmountPopup(event) {
-    const itemDiv = event.target.closest('.menu-item');
-    const name = itemDiv.dataset.name;
-    const price = parseFloat(itemDiv.dataset.price);
-    currentAmountItem = {name, price};
+    currentAmountItem = event.target.closest('.menu-item');
     amountInput.value = 1;
     amountModal.classList.add('active');
   }
   function closeAmountPopup() {
-    amountModal.classList.remove('active');
     currentAmountItem = null;
+    amountModal.classList.remove('active');
   }
   function confirmAmount() {
-    let amount = parseInt(amountInput.value);
-    if(isNaN(amount) || amount < 1) amount = 1;
-    if(amount > 50) amount = 50;
-    if(!currentAmountItem) return;
-    let found = cart.find(i => i.name === currentAmountItem.name);
-    if(found) found.amount += amount;
-    else cart.push({name: currentAmountItem.name, price: currentAmountItem.price, amount});
+    const amount = parseInt(amountInput.value);
+    if (isNaN(amount) || amount < 1 || amount > 50) {
+      alert('Voer een getal in tussen 1 en 50.');
+      return;
+    }
+    const name = currentAmountItem.dataset.name;
+    const price = parseFloat(currentAmountItem.dataset.price);
+    const found = cart.find(i => i.name === name);
+    if (found) {
+      found.amount += amount;
+    } else {
+      cart.push({name, price, amount});
+    }
     updateCartCount();
     closeAmountPopup();
   }
 
+  // Update cart count display
+  function updateCartCount() {
+    let total = 0;
+    cart.forEach(i => total += i.amount);
+    cartCount.textContent = total;
+  }
+
+  // Open/close cart modal
   cartBtn.addEventListener('click', () => {
     renderCartItems();
     cartModal.classList.add('active');
@@ -640,326 +618,243 @@
   function closeCart() {
     cartModal.classList.remove('active');
   }
+
+  // Render cart items
   function renderCartItems() {
-    cartItemsDiv.innerHTML = '';
     if(cart.length === 0) {
       cartItemsDiv.textContent = 'Winkelmandje is leeg.';
       return;
     }
-    cart.forEach((item,i) => {
+    cartItemsDiv.innerHTML = '';
+    cart.forEach((item, i) => {
       const div = document.createElement('div');
-      div.style.marginBottom = '10px';
-      div.textContent = `${item.name} x${item.amount} - €${(item.price*item.amount).toFixed(2)}`;
+      div.textContent = `${item.name} x${item.amount} - €${(item.price * item.amount).toFixed(2)}`;
       cartItemsDiv.appendChild(div);
     });
   }
 
-  // Bestelling plaatsen
+  // Place order (met opmerkingen)
   async function placeOrder() {
     if(cart.length === 0) {
-      alert('Je winkelmandje is leeg.');
+      alert('Winkelmandje is leeg!');
       return;
     }
     const notes = orderNotes.value.trim();
 
     ordersData.counter = parseInt(ordersData.counter) || 0;
     ordersData.counter++;
+    const orderNumber = ordersData.counter;
 
     const newOrder = {
-      id: ordersData.counter,
-      items: cart.map(i => ({name: i.name, price: i.price, amount: i.amount})),
-      notes: notes,
+      number: orderNumber,
+      items: [...cart],
       status: 'pending',
       extraText: '',
-      time: new Date().toISOString()
+      notes,
+      created: new Date().toISOString()
     };
-
     ordersData.orders.push(newOrder);
+    await saveOrdersData();
 
-    try {
-      await saveOrdersData();
-    } catch(e) {
-      alert('Fout bij opslaan bestelling, probeer opnieuw.');
-      return;
-    }
-
+    // reset
     cart = [];
-    orderNotes.value = '';
     updateCartCount();
+    orderNotes.value = '';
     closeCart();
 
-    orderNumberDisplay.textContent = '#' + newOrder.id;
+    // Show keep open screen met ordernummer
+    orderNumberDisplay.textContent = `#${orderNumber}`;
     keepOpenScreen.classList.add('active');
 
-    pollOrders();
+    // Force update operator en screen
+    if(loggedInOperator) renderOperatorOrders();
+    if(loggedInScreen) renderScreenOrders();
   }
 
   function closeKeepOpen() {
     keepOpenScreen.classList.remove('active');
+    // Terug naar hoofd bestel scherm
+    location.hash = '#/';
   }
 
-  // JSONBin functies
-  async function loadOrdersData() {
-    try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-        headers: { 'X-Master-Key': API_KEY }
-      });
-      if(!res.ok) throw new Error('Load failed');
-      const json = await res.json();
-      if(json && json.record) {
-        ordersData = json.record;
-        ordersData.counter = parseInt(ordersData.counter) || 0;
-        if(!ordersData.orders) ordersData.orders = [];
-      }
-    } catch(e) {
-      ordersData = { counter: 0, orders: [] };
-    }
-  }
-  async function saveOrdersData() {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY,
-        'X-Bin-Versioning': 'false'
-      },
-      body: JSON.stringify(ordersData)
-    });
-    if(!res.ok) throw new Error('Save failed');
-  }
+  // Operator login
+  async function operatorLogin() {
+    const user = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
 
-  // Operator login/logout
-  loginButton.addEventListener('click', () => {
-    loginModal.classList.add('active');
-  });
-  function closeLogin() {
-    loginModal.classList.remove('active');
-    loginUser.value = '';
-    loginPass.value = '';
-  }
-  function operatorLogin() {
-    if(loginUser.value === 'Operator' && loginPass.value === '8008') {
+    if(user === 'Operator' && pass === '8008') {
       loggedInOperator = true;
-      closeLogin();
-      showOperatorView();
-      updateUIForLogin();
+      location.hash = '#/operatorview';
+      loadOrdersData();
+      renderOperatorOrders();
     } else {
-      alert('Foutieve inloggegevens');
+      alert('Verkeerde inloggegevens.');
     }
   }
   function logoutOperator() {
     loggedInOperator = false;
-    hideOperatorView();
-    updateUIForLogin();
-  }
-  function updateUIForLogin() {
-    if(loggedInOperator || loggedInScreen) {
-      loginButton.style.display = 'none';
-      screenLoginButton.style.display = loggedInScreen ? 'none' : 'inline-block';
-
-      if(loggedInOperator) {
-        document.querySelector('main').style.display = 'none';
-      } else {
-        document.querySelector('main').style.display = 'block';
-      }
-    } else {
-      loginButton.style.display = 'inline-block';
-      screenLoginButton.style.display = 'inline-block';
-      document.querySelector('main').style.display = 'block';
-    }
+    location.hash = '#/';
   }
 
-  // Operator view
-  function showOperatorView() {
-    renderOperatorOrders();
-    operatorView.style.display = 'block';
-  }
-  function hideOperatorView() {
-    operatorView.style.display = 'none';
-  }
-  function renderOperatorOrders() {
-    if(ordersData.orders.length === 0) {
-      operatorOrdersDiv.textContent = 'Geen bestellingen.';
-      return;
-    }
-    operatorOrdersDiv.innerHTML = '';
-    ordersData.orders.forEach(order => {
-      const div = document.createElement('div');
-      div.className = 'order-item';
-      div.textContent = `#${order.id} - ${new Date(order.time).toLocaleTimeString()} - Status: ${translateStatus(order.status)}`;
-      div.onclick = () => openOrderDetail(order.id);
-      operatorOrdersDiv.appendChild(div);
-    });
-  }
+  // Screen login
+  async function screenLogin() {
+    const user = document.getElementById('screenUser').value.trim();
+    const pass = document.getElementById('screenPass').value.trim();
 
-  function translateStatus(status) {
-    switch(status) {
-      case 'pending': return 'In Behandeling';
-      case 'ready': return 'Klaar';
-      case 'delayed': return 'Kan langer duren';
-      default: return status;
-    }
-  }
-
-  // Order detail
-  function openOrderDetail(orderId) {
-    const order = ordersData.orders.find(o => o.id === orderId);
-    if(!order) return;
-    editingOrder = order;
-    orderDetailContent.innerHTML = '';
-    order.items.forEach(i => {
-      const p = document.createElement('p');
-      p.textContent = `${i.name} x${i.amount} - €${(i.price * i.amount).toFixed(2)}`;
-      orderDetailContent.appendChild(p);
-    });
-    orderStatusSelect.value = order.status || 'pending';
-    extraText.value = order.extraText || '';
-    orderDetailModal.classList.add('active');
-  }
-  function closeOrderDetail() {
-    orderDetailModal.classList.remove('active');
-    editingOrder = null;
-  }
-  async function updateOrder() {
-    if(!editingOrder) return;
-    editingOrder.status = orderStatusSelect.value;
-    editingOrder.extraText = extraText.value.trim();
-    try {
-      await saveOrdersData();
-      closeOrderDetail();
-      renderOperatorOrders();
-      renderScreenOrders();
-    } catch(e) {
-      alert('Fout bij opslaan status');
-    }
-  }
-  async function deleteOrder() {
-    if(!editingOrder) return;
-    if(!confirm(`Weet je zeker dat je bestelling #${editingOrder.id} wilt verwijderen?`)) return;
-    ordersData.orders = ordersData.orders.filter(o => o.id !== editingOrder.id);
-    try {
-      await saveOrdersData();
-      closeOrderDetail();
-      renderOperatorOrders();
-      renderScreenOrders();
-    } catch(e) {
-      alert('Fout bij verwijderen');
-    }
-  }
-
-  // Scherm account login/logout
-  screenLoginButton.addEventListener('click', () => {
-    screenLoginModal.classList.add('active');
-  });
-  function closeScreenLogin() {
-    screenLoginModal.classList.remove('active');
-    screenUser.value = '';
-    screenPass.value = '';
-  }
-  function screenLogin() {
-    if(screenUser.value === 'OperatorScreen' && screenPass.value === '8008') {
+    if(user === 'OperatorScreen' && pass === '8008') {
       loggedInScreen = true;
-      closeScreenLogin();
-      showScreenView();
-      updateUIForLogin();
+      location.hash = '#/screenview';
+      loadOrdersData();
+      renderScreenOrders();
     } else {
-      alert('Foutieve inloggegevens');
+      alert('Verkeerde inloggegevens.');
     }
   }
   function screenLogout() {
     loggedInScreen = false;
-    hideScreenView();
-    updateUIForLogin();
-  }
-  function showScreenView() {
-    screenView.style.display = 'flex';
-    renderScreenOrders();
-  }
-  function hideScreenView() {
-    screenView.style.display = 'none';
-  }
-  function renderScreenOrders() {
-    screenPendingOrders.innerHTML = '';
-    screenReadyOrders.innerHTML = '';
-    ordersData.orders.forEach(order => {
-      const orderId = parseInt(order.id);
-      if(isNaN(orderId)) return;
-      const div = document.createElement('div');
-      div.className = 'order-item';
-      div.textContent = `#${orderId}`;
-      if(order.status === 'ready') {
-        screenReadyOrders.appendChild(div);
-      } else {
-        screenPendingOrders.appendChild(div);
-      }
-    });
+    location.hash = '#/';
   }
 
-  // Polling realtime
-  let pollInterval = null;
-  async function pollOrders() {
+  // Load and save data bij API JSONBin
+  async function loadOrdersData() {
     try {
       const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
         headers: {
           'X-Master-Key': API_KEY
         }
       });
-      if(!res.ok) throw new Error('Polling failed');
       const json = await res.json();
-      if(json && json.record) {
-        const oldReadyCount = ordersData.orders.filter(o => o.status === 'ready').length;
+      if(json.record) {
         ordersData = json.record;
         ordersData.counter = parseInt(ordersData.counter) || 0;
         if(!ordersData.orders) ordersData.orders = [];
-
-        renderOperatorOrders();
-        renderScreenOrders();
-
-        // Check if new ready order appeared for sound
-        const newReadyCount = ordersData.orders.filter(o => o.status === 'ready').length;
-        if(newReadyCount > oldReadyCount && loggedInScreen) {
-          doneSound.play();
-        }
+      } else {
+        ordersData = { counter: 0, orders: [] };
       }
     } catch(e) {
-      // fail silently
+      console.warn('Kon niet data laden, gebruik cache.');
+    }
+  }
+  async function saveOrdersData() {
+    try {
+      await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': API_KEY
+        },
+        body: JSON.stringify(ordersData)
+      });
+    } catch(e) {
+      alert('Fout bij opslaan, probeer opnieuw.');
     }
   }
 
-  // Start polling elke 4 sec
-  setInterval(pollOrders, 4000);
-
-  // Init
-  async function init() {
-    await loadOrdersData();
-    updateCartCount();
-    updateUIForLogin();
+  // Render operator orders
+  function renderOperatorOrders() {
+    if(!loggedInOperator) return;
+    operatorOrdersDiv.innerHTML = '';
+    if(ordersData.orders.length === 0) {
+      operatorOrdersDiv.textContent = 'Geen bestellingen.';
+      return;
+    }
+    ordersData.orders.forEach(order => {
+      const div = document.createElement('div');
+      div.className = 'order-item';
+      div.textContent = `#${order.number} - ${new Date(order.created).toLocaleString()} - Status: ${statusText(order.status)}`;
+      div.onclick = () => openOrderDetail(order.number);
+      operatorOrdersDiv.appendChild(div);
+    });
   }
-  init();
+  // Open order detail modal
+  function openOrderDetail(orderNumber) {
+    editingOrder = ordersData.orders.find(o => o.number === orderNumber);
+    if(!editingOrder) return alert('Bestelling niet gevonden.');
 
-  // Bestelling na verwijderen opmerking probleem opgelost omdat we counter opslaan en niet aanpassen bij verwijderen
-  // Geen nummers herschikken
+    orderDetailContent.textContent = editingOrder.items.map(i => `${i.name} x${i.amount} - €${(i.price*i.amount).toFixed(2)}`).join('\n');
+    orderStatusSelect.value = editingOrder.status;
+    extraTextInput.value = editingOrder.extraText || '';
+    orderDetailModal.classList.add('active');
+  }
+  // Close order detail
+  function closeOrderDetail() {
+    orderDetailModal.classList.remove('active');
+    editingOrder = null;
+  }
+  // Update order (status en extra tekst)
+  async function updateOrder() {
+    if(!editingOrder) return;
+    editingOrder.status = orderStatusSelect.value;
+    editingOrder.extraText = extraTextInput.value.trim();
+    await saveOrdersData();
+    renderOperatorOrders();
+    renderScreenOrders();
+    closeOrderDetail();
+  }
+  // Delete order
+  async function deleteOrder() {
+    if(!editingOrder) return;
+    if(!confirm(`Weet je zeker dat je bestelling #${editingOrder.number} wilt verwijderen?`)) return;
+    ordersData.orders = ordersData.orders.filter(o => o.number !== editingOrder.number);
+    await saveOrdersData();
+    renderOperatorOrders();
+    renderScreenOrders();
+    closeOrderDetail();
+  }
 
-  // Bestelling nummer NAN of NaF probleem opgelost door altijd parseInt
+  // Render screen orders
+  function renderScreenOrders() {
+    if(!loggedInScreen) return;
+    screenPendingOrdersDiv.innerHTML = '';
+    screenReadyOrdersDiv.innerHTML = '';
 
-  // Export functies globaal voor onclick inline
-  window.addToCart = addToCart;
-  window.openAmountPopup = openAmountPopup;
-  window.closeAmountPopup = closeAmountPopup;
-  window.confirmAmount = confirmAmount;
-  window.placeOrder = placeOrder;
-  window.closeCart = closeCart;
-  window.closeKeepOpen = closeKeepOpen;
-  window.operatorLogin = operatorLogin;
-  window.closeLogin = closeLogin;
-  window.logoutOperator = logoutOperator;
-  window.openOrderDetail = openOrderDetail;
-  window.closeOrderDetail = closeOrderDetail;
-  window.updateOrder = updateOrder;
-  window.deleteOrder = deleteOrder;
-  window.screenLogin = screenLogin;
-  window.closeScreenLogin = closeScreenLogin;
-  window.screenLogout = screenLogout;
+    const pendingOrders = ordersData.orders.filter(o => o.status === 'pending');
+    const readyOrders = ordersData.orders.filter(o => o.status === 'ready');
+
+    pendingOrders.forEach(o => {
+      const div = document.createElement('div');
+      div.className = 'order-item-screen order-pending';
+      div.textContent = `#${o.number}`;
+      screenPendingOrdersDiv.appendChild(div);
+    });
+    readyOrders.forEach(o => {
+      const div = document.createElement('div');
+      div.className = 'order-item-screen order-ready';
+      div.textContent = `#${o.number}`;
+      screenReadyOrdersDiv.appendChild(div);
+    });
+
+    // Speel sound af als er nieuwe klaar komen
+    if(readyOrders.length > 0 && !doneSound.played) {
+      doneSound.play().catch(() => {});
+      doneSound.played = true;
+    } else if(readyOrders.length === 0) {
+      doneSound.played = false;
+    }
+  }
+
+  // Poll alle 5 seconden de data
+  setInterval(async () => {
+    await loadOrdersData();
+    if(loggedInOperator) renderOperatorOrders();
+    if(loggedInScreen) renderScreenOrders();
+  }, 5000);
+
+  // Status vertaling
+  function statusText(status) {
+    if(status === 'pending') return 'In Behandeling';
+    if(status === 'ready') return 'Klaar';
+    if(status === 'delayed') return 'Kan langer duren';
+    return status;
+  }
+
+  // Terug naar hoofd bestel scherm vanuit login
+  function backToMain() {
+    location.hash = '#/';
+  }
+
+  // Init routing
+  handleRoute();
 
 })();
 </script>
