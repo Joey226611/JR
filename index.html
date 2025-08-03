@@ -1,331 +1,331 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Restaurant Bestelsysteem</title>
-  <style>
-    /* Basis styling */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: #fafafa;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      background: #333;
-      color: white;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    header h1 {
-      margin: 0;
-      font-weight: normal;
-      font-size: 1.5rem;
-    }
-    main {
-      flex-grow: 1;
-      padding: 20px;
-    }
-    /* Tabs */
-    #tabs {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    #tabs button {
-      background: #ddd;
-      border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      border-radius: 5px 5px 0 0;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    #tabs button.active {
-      background: #333;
-      color: white;
-    }
-    /* Tab content */
-    .tab-content {
-      display: none;
-      background: white;
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-top: none;
-      border-radius: 0 5px 5px 5px;
-      min-height: 200px;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    /* Menu item styling */
-    .menu-item {
-      border-bottom: 1px solid #eee;
-      padding: 10px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .menu-item button {
-      background: #4CAF50;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .menu-item button:hover {
-      background: #45a049;
-    }
-    /* Winkelmandje knop */
-    #cartBtn {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      background: #e91e63;
-      border: none;
-      color: white;
-      padding: 15px 20px;
-      font-weight: bold;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 1000;
-    }
-    #cartCount {
-      background: white;
-      color: #e91e63;
-      border-radius: 50%;
-      padding: 2px 7px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      min-width: 24px;
-      text-align: center;
-    }
-    /* Modal styling */
-    .modal {
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-    .modal.active {
-      display: flex;
-    }
-    .modal-content {
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      max-width: 400px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-    .modal-content h2, .modal-content h3 {
-      margin-top: 0;
-    }
-    .modal-footer {
-      margin-top: 15px;
-      text-align: right;
-    }
-    .modal-footer .btn {
-      margin-left: 10px;
-    }
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      background: #4CAF50;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    .btn:hover {
-      background: #45a049;
-    }
-    .btn.cancel {
-      background: #f44336;
-    }
-    .btn.cancel:hover {
-      background: #d32f2f;
-    }
-    /* Operator orders */
-    #operatorOrders .order-item {
-      border-bottom: 1px solid #ccc;
-      padding: 8px 0;
-      cursor: pointer;
-    }
-    #operatorOrders .order-item:hover {
-      background: #f0f0f0;
-    }
-    /* Screen view */
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Restaurant Bestelsysteem</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 0;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    background: #333;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: normal;
+    font-size: 1.5rem;
+  }
+  nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 15px;
+    cursor: pointer;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  main {
+    flex-grow: 1;
+    padding: 20px;
+  }
+  #tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  #tabs button {
+    background: #ddd;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  #tabs button.active {
+    background: #333;
+    color: white;
+  }
+  .tab-content {
+    display: none;
+    background: white;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 5px 5px 5px;
+    min-height: 200px;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  .menu-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .menu-item button {
+    background: #4CAF50;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .menu-item button:hover {
+    background: #45a049;
+  }
+  #cartBtn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background: #e91e63;
+    border: none;
+    color: white;
+    padding: 15px 20px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+  }
+  #cartCount {
+    background: white;
+    color: #e91e63;
+    border-radius: 50%;
+    padding: 2px 7px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    min-width: 24px;
+    text-align: center;
+  }
+  .modal {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  .modal.active {
+    display: flex;
+  }
+  .modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  }
+  .modal-content h2, .modal-content h3 {
+    margin-top: 0;
+  }
+  .modal-footer {
+    margin-top: 15px;
+    text-align: right;
+  }
+  .modal-footer .btn {
+    margin-left: 10px;
+  }
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  .btn:hover {
+    background: #45a049;
+  }
+  .btn.cancel {
+    background: #f44336;
+  }
+  .btn.cancel:hover {
+    background: #d32f2f;
+  }
+  #operatorOrders .order-item {
+    border-bottom: 1px solid #ccc;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+  #operatorOrders .order-item:hover {
+    background: #f0f0f0;
+  }
+  #screenView {
+    display: none;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 20px;
+    gap: 40px;
+    flex-wrap: wrap;
+    background: #222;
+    color: white;
+    min-height: 80vh;
+  }
+  #screenView > div {
+    flex: 1 1 40%;
+    background: #333;
+    border-radius: 10px;
+    padding: 15px;
+    min-width: 250px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  #screenView h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #aaa;
+    padding-bottom: 10px;
+  }
+  .order-item-screen {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    color: white;
+  }
+  .order-pending {
+    background: #a0522d; /* bruin */
+    text-align: left;
+  }
+  .order-ready {
+    background: #2e8b57; /* groen */
+    text-align: right;
+  }
+  #loginPages {
+    display: none;
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .login-page {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    width: 320px;
+  }
+  .login-page h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .login-page label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  .login-page input {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+  .login-page button {
+    width: 100%;
+    font-size: 1rem;
+  }
+  @media(max-width: 700px) {
     #screenView {
-      display: none;
-      flex-direction: row;
-      justify-content: space-around;
-      padding: 20px;
-      gap: 40px;
-      flex-wrap: wrap;
-      background: #222;
-      color: white;
-      min-height: 80vh;
+      flex-direction: column;
     }
     #screenView > div {
-      flex: 1 1 40%;
-      background: #333;
-      border-radius: 10px;
-      padding: 15px;
-      min-width: 250px;
-      max-height: 70vh;
-      overflow-y: auto;
+      max-width: 100%;
     }
-    #screenView h3 {
-      margin-top: 0;
-      border-bottom: 2px solid #aaa;
-      padding-bottom: 10px;
+    #tabs {
+      flex-wrap: wrap;
     }
-    .order-item-screen {
-      font-size: 2rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      padding: 10px;
-      color: white;
-    }
-    .order-pending {
-      background: #a0522d; /* bruin */
-      text-align: left;
-    }
-    .order-ready {
-      background: #2e8b57; /* groen */
-      text-align: right;
-    }
-    /* Login pages styling */
-    #loginPages {
-      display: none;
-      min-height: 80vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .login-page {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-      width: 320px;
-    }
-    .login-page h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .login-page label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    .login-page input {
-      width: 100%;
-      padding: 8px 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-    .login-page button {
-      width: 100%;
-      font-size: 1rem;
-    }
-    /* Responsive */
-    @media(max-width: 700px) {
-      #screenView {
-        flex-direction: column;
-      }
-      #screenView > div {
-        max-width: 100%;
-      }
-      #tabs {
-        flex-wrap: wrap;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
 
 <header>
   <h1>RLogo Restaurant</h1>
   <nav>
-    <a href="#/" style="color:white; text-decoration:none; font-weight:bold; margin-right: 15px;">Bestellen</a>
-    <a href="#/operatorlogin" style="color:white; text-decoration:none; font-weight:bold; margin-right: 15px;">Operator Login</a>
-    <a href="#/screenlogin" style="color:white; text-decoration:none; font-weight:bold;">Scherm Login</a>
+    <a href="#/">Bestellen</a>
+    <a href="#/operatorlogin">Operator Login</a>
+    <a href="#/screenlogin">Scherm Login</a>
   </nav>
 </header>
 
 <!-- Main bestel systeem -->
-<main id="mainView">
-  <div id="tabs">
-    <button class="active" data-tab="drinksTab">Dranken</button>
-    <button data-tab="fingerfoodTab">Fingerfood</button>
-    <button data-tab="dessertsTab">Desserts</button>
-    <button data-tab="menusTab">Menu's</button>
+<main id="mainView" role="main" aria-label="Bestelsysteem">
+  <div id="tabs" role="tablist" aria-label="Categorieën">
+    <button role="tab" aria-selected="true" data-tab="drinksTab" tabindex="0" class="active">Dranken</button>
+    <button role="tab" aria-selected="false" data-tab="fingerfoodTab" tabindex="-1">Fingerfood</button>
+    <button role="tab" aria-selected="false" data-tab="dessertsTab" tabindex="-1">Desserts</button>
+    <button role="tab" aria-selected="false" data-tab="menusTab" tabindex="-1">Menu's</button>
   </div>
 
-  <section id="drinksTab" class="tab-content active">
+  <section id="drinksTab" class="tab-content active" role="tabpanel" tabindex="0" aria-hidden="false">
     <div class="menu-item" data-name="Cola" data-price="1.50">
       <div>Cola - €1.50</div>
-      <button onclick="addToCart(event)">Voeg toe</button>
+      <button type="button" onclick="addToCart(event)">Voeg toe</button>
     </div>
     <div class="menu-item" data-name="Water" data-price="1.00">
       <div>Water - €1.00</div>
-      <button onclick="addToCart(event)">Voeg toe</button>
+      <button type="button" onclick="addToCart(event)">Voeg toe</button>
     </div>
   </section>
 
-  <section id="fingerfoodTab" class="tab-content">
+  <section id="fingerfoodTab" class="tab-content" role="tabpanel" tabindex="0" aria-hidden="true">
     <div class="menu-item" data-name="Pringles Natural" data-price="0.10">
       <div>Pringles Natural - €0.10 per chip</div>
-      <button onclick="openAmountPopup(event)">Aantal kiezen</button>
+      <button type="button" onclick="openAmountPopup(event)">Aantal kiezen</button>
     </div>
     <div class="menu-item" data-name="Pringles BBQ-saus" data-price="0.12">
       <div>Pringles BBQ-saus - €0.12 per chip</div>
-      <button onclick="openAmountPopup(event)">Aantal kiezen</button>
+      <button type="button" onclick="openAmountPopup(event)">Aantal kiezen</button>
     </div>
   </section>
 
-  <section id="dessertsTab" class="tab-content">
+  <section id="dessertsTab" class="tab-content" role="tabpanel" tabindex="0" aria-hidden="true">
     <div class="menu-item" data-name="Chocolade Taart" data-price="2.50">
       <div>Chocolade Taart - €2.50</div>
-      <button onclick="addToCart(event)">Voeg toe</button>
+      <button type="button" onclick="addToCart(event)">Voeg toe</button>
     </div>
     <div class="menu-item" data-name="Vanille Ijs" data-price="2.00">
       <div>Vanille Ijs - €2.00</div>
-      <button onclick="addToCart(event)">Voeg toe</button>
+      <button type="button" onclick="addToCart(event)">Voeg toe</button>
     </div>
   </section>
 
-  <section id="menusTab" class="tab-content">
+  <section id="menusTab" class="tab-content" role="tabpanel" tabindex="0" aria-hidden="true">
     <div class="menu-item" data-name="Menu Kinder" data-price="5.00">
       <div>Menu Kinder - €5.00</div>
-      <button onclick="addToCart(event)">Voeg toe</button>
+      <button type="button" onclick="addToCart(event)">Voeg toe</button>
     </div>
     <div class="menu-item" data-name="Menu Volwassen" data-price="9.00">
       <div>Menu Volwassen - €9.00</div>
-      <button onclick="addToCart(event)">Voeg toe</button>
+      <button type="button" onclick="addToCart(event)">Voeg toe</button>
     </div>
   </section>
 </main>
@@ -338,132 +338,131 @@
 <!-- Modals -->
 
 <!-- Aantal chips modal -->
-<div class="modal" id="amountModal">
+<div class="modal" id="amountModal" role="dialog" aria-modal="true" aria-labelledby="amountModalTitle" tabindex="-1">
   <div class="modal-content">
-    <h2>Kies aantal chips</h2>
-    <input type="number" id="amountInput" min="1" max="50" value="1" />
+    <h2 id="amountModalTitle">Kies aantal chips</h2>
+    <input type="number" id="amountInput" min="1" max="50" value="1" aria-label="Aantal chips" />
     <div class="modal-footer">
-      <button class="btn" onclick="confirmAmount()">Bevestigen</button>
-      <button class="btn cancel" onclick="closeAmountPopup()">Annuleren</button>
+      <button class="btn" type="button" onclick="confirmAmount()">Bevestigen</button>
+      <button class="btn cancel" type="button" onclick="closeAmountPopup()">Annuleren</button>
     </div>
   </div>
 </div>
 
 <!-- Winkelmandje modal -->
-<div class="modal" id="cartModal">
+<div class="modal" id="cartModal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle" tabindex="-1">
   <div class="modal-content">
-    <h2>Winkelmandje</h2>
-    <div id="cartItems">Winkelmandje is leeg.</div>
+    <h2 id="cartModalTitle">Winkelmandje</h2>
+    <div id="cartItems" aria-live="polite">Winkelmandje is leeg.</div>
     <label for="orderNotes">Opmerkingen / Allergieën (optioneel):</label>
-    <textarea id="orderNotes" placeholder="Bijv. Geen pinda's..."></textarea>
+    <textarea id="orderNotes" placeholder="Bijv. Geen pinda's..." rows="3" aria-label="Opmerkingen of allergieën"></textarea>
     <div class="modal-footer">
-      <button class="btn" onclick="placeOrder()">Bestelling plaatsen</button>
-      <button class="btn cancel" onclick="closeCart()">Sluiten</button>
+      <button class="btn" type="button" onclick="placeOrder()">Bestelling plaatsen</button>
+      <button class="btn cancel" type="button" onclick="closeCart()">Sluiten</button>
     </div>
   </div>
 </div>
 
 <!-- Bestelling geplaatst scherm -->
-<div class="modal" id="keepOpenScreen">
+<div class="modal" id="keepOpenScreen" role="dialog" aria-modal="true" aria-labelledby="keepOpenTitle" tabindex="-1">
   <div class="modal-content" style="text-align:center;">
     <p>Uw bestelling is geplaatst! Uw bestelnummer is:</p>
-    <div id="orderNumberDisplay">#0</div>
+    <div id="orderNumberDisplay" style="font-size: 2rem; font-weight: bold;">#0</div>
     <p>Laat deze website open totdat uw bestelling klaar is.</p>
-    <button class="btn" onclick="closeKeepOpen()">Sluiten</button>
+    <button class="btn" type="button" onclick="closeKeepOpen()">Sluiten</button>
   </div>
 </div>
 
 <!-- Operator view -->
 <div id="operatorView" style="display:none; padding: 20px;">
   <h2>Operator Bestellingen</h2>
-  <div id="operatorOrders">Geen bestellingen.</div>
+  <div id="operatorOrders" aria-live="polite">Geen bestellingen.</div>
   <div class="modal-footer" style="margin-top:20px;">
-    <button class="btn cancel" onclick="logoutOperator()" id="operatorLogoutBtn">Uitloggen</button>
+    <button class="btn cancel" type="button" onclick="logoutOperator()" id="operatorLogoutBtn">Uitloggen</button>
   </div>
 </div>
 
 <!-- Order detail modal -->
-<div class="modal" id="orderDetailModal">
+<div class="modal" id="orderDetailModal" role="dialog" aria-modal="true" aria-labelledby="orderDetailTitle" tabindex="-1">
   <div class="modal-content">
-    <h3>Bestelling Details</h3>
-    <div id="orderDetailContent"></div>
+    <h3 id="orderDetailTitle">Bestelling Details</h3>
+    <pre id="orderDetailContent" style="white-space: pre-wrap; font-family: monospace; background:#f7f7f7; padding:10px; border-radius:6px; max-height: 150px; overflow-y: auto;"></pre>
     <label for="orderStatusSelect">Status:</label>
-    <select id="orderStatusSelect">
+    <select id="orderStatusSelect" aria-label="Status wijzigen">
       <option value="pending">In Behandeling</option>
       <option value="ready">Klaar</option>
       <option value="delayed">Kan langer duren</option>
     </select>
-    <label for="extraText">Extra tekst (communicatie):</label>
-    <textarea id="extraText" placeholder="Voeg hier een tekst toe..."></textarea>
+    <label for="extraText">Extra tekst (optioneel):</label>
+    <textarea id="extraText" rows="3" placeholder="Bijv. spoed" aria-label="Extra tekst"></textarea>
     <div class="modal-footer">
-      <button class="btn" onclick="updateOrder()">Opslaan</button>
-      <button class="btn cancel" onclick="deleteOrder()">Verwijderen</button>
-      <button class="btn cancel" onclick="closeOrderDetail()">Sluiten</button>
+      <button class="btn" type="button" onclick="updateOrder()">Opslaan</button>
+      <button class="btn cancel" type="button" onclick="deleteOrder()">Verwijderen</button>
+      <button class="btn cancel" type="button" onclick="closeOrderDetail()">Sluiten</button>
     </div>
   </div>
 </div>
 
-<!-- Scherm account login pagina -->
-<div id="loginPages" style="display:none; flex-direction: column; align-items: center;">
+<!-- Operator login pagina -->
+<div id="loginPages" style="display:none; justify-content:center; align-items:center; min-height: 80vh; background:#fafafa;">
   <div id="operatorLoginPage" class="login-page" style="display:none;">
     <h2>Operator Login</h2>
-    <label for="loginUser">Gebruikersnaam:</label>
+    <label for="loginUser">Gebruikersnaam</label>
     <input type="text" id="loginUser" autocomplete="username" />
-    <label for="loginPass">Wachtwoord:</label>
+    <label for="loginPass">Wachtwoord</label>
     <input type="password" id="loginPass" autocomplete="current-password" />
-    <button class="btn" onclick="operatorLogin()">Inloggen</button>
+    <button class="btn" type="button" id="operatorLoginBtn">Inloggen</button>
   </div>
-  <div id="screenLoginPage" class="login-page" style="display:none; margin-top: 40px;">
-    <h2>Scherm Account Login</h2>
-    <label for="screenUser">Gebruikersnaam:</label>
+  <div id="screenLoginPage" class="login-page" style="display:none;">
+    <h2>Scherm Login</h2>
+    <label for="screenUser">Gebruikersnaam</label>
     <input type="text" id="screenUser" autocomplete="username" />
-    <label for="screenPass">Wachtwoord:</label>
+    <label for="screenPass">Wachtwoord</label>
     <input type="password" id="screenPass" autocomplete="current-password" />
-    <button class="btn" onclick="screenLogin()">Inloggen</button>
+    <button class="btn" type="button" id="screenLoginBtn">Inloggen</button>
   </div>
-  <button class="btn cancel" style="margin-top:40px;" onclick="backToMain()">Terug naar Bestellen</button>
 </div>
 
 <!-- Scherm account view -->
-<div id="screenView" style="display:none; flex-direction: row; justify-content: space-around; padding: 20px; gap: 40px; flex-wrap: wrap; background: #222; color: white; min-height: 80vh;">
+<div id="screenView" style="display:none; flex-direction: row; padding: 20px; gap: 20px;">
   <div>
     <h3>In Behandeling</h3>
-    <div id="screenPendingOrders">Laden...</div>
+    <div id="screenPendingOrders" aria-live="polite"></div>
   </div>
   <div>
     <h3>Klaar</h3>
-    <div id="screenReadyOrders">Laden...</div>
+    <div id="screenReadyOrders" aria-live="polite"></div>
   </div>
-  <button class="btn cancel" style="margin-top:15px;" onclick="screenLogout()" id="screenLogoutBtn">Uitloggen Scherm</button>
+  <button class="btn cancel" style="position: fixed; top: 20px; right: 20px;" id="screenLogoutBtn">Uitloggen</button>
+  <audio id="doneSound" src="Sounds/DoneSoundForScreen.mp3" preload="auto"></audio>
 </div>
-
-<audio id="doneSound" src="Sounds/DoneSoundForScreen.mp3" preload="auto"></audio>
 
 <script>
 (() => {
   const BIN_ID = '688f6efe7b4b8670d8ac3f46';
   const API_KEY = '$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O';
 
+  // State
   let ordersData = { counter: 0, orders: [] };
-
   let cart = [];
   let currentAmountItem = null;
   let editingOrder = null;
   let loggedInOperator = false;
   let loggedInScreen = false;
-  let language = 'en';
 
-  // DOM elementen
-  const tabs = document.querySelectorAll('#tabs button');
+  // Elements
+  const tabs = [...document.querySelectorAll('#tabs button')];
   const cartBtn = document.getElementById('cartBtn');
   const cartCount = document.getElementById('cartCount');
   const cartModal = document.getElementById('cartModal');
   const cartItemsDiv = document.getElementById('cartItems');
+  const orderNotes = document.getElementById('orderNotes');
+
   const amountModal = document.getElementById('amountModal');
   const amountInput = document.getElementById('amountInput');
+
   const keepOpenScreen = document.getElementById('keepOpenScreen');
   const orderNumberDisplay = document.getElementById('orderNumberDisplay');
-  const orderNotes = document.getElementById('orderNotes');
 
   const loginPages = document.getElementById('loginPages');
   const operatorLoginPage = document.getElementById('operatorLoginPage');
@@ -491,6 +490,7 @@
     operatorView.style.display = 'none';
     loginPages.style.display = 'none';
     screenView.style.display = 'none';
+    cartBtn.style.display = 'none';
 
     // Toon wat nodig is
     if (viewName === 'main') {
@@ -500,18 +500,14 @@
       loginPages.style.display = 'flex';
       operatorLoginPage.style.display = 'block';
       screenLoginPage.style.display = 'none';
-      cartBtn.style.display = 'none';
     } else if (viewName === 'screenLogin') {
       loginPages.style.display = 'flex';
       operatorLoginPage.style.display = 'none';
       screenLoginPage.style.display = 'block';
-      cartBtn.style.display = 'none';
     } else if (viewName === 'operatorView') {
       operatorView.style.display = 'block';
-      cartBtn.style.display = 'none';
     } else if (viewName === 'screenView') {
       screenView.style.display = 'flex';
-      cartBtn.style.display = 'none';
     }
   }
 
@@ -539,7 +535,7 @@
         location.hash = '#/screenlogin';
       }
     } else {
-      // onbekende route → fallback naar hoofd
+      // fallback
       location.hash = '#/';
     }
   }
@@ -548,8 +544,14 @@
   // Tabs switching
   tabs.forEach(btn => {
     btn.addEventListener('click', () => {
-      tabs.forEach(b => b.classList.remove('active'));
+      tabs.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+        b.tabIndex = -1;
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      btn.tabIndex = 0;
       document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
       const target = btn.dataset.tab;
       document.getElementById(target).classList.add('active');
@@ -565,7 +567,6 @@
       openAmountPopup(event);
       return;
     }
-    // check if already in cart: +1
     const found = cart.find(i => i.name === name);
     if (found) {
       found.amount++;
@@ -574,21 +575,28 @@
     }
     updateCartCount();
   }
+  window.addToCart = addToCart;
 
   // Amount popup for pringles
   function openAmountPopup(event) {
     currentAmountItem = event.target.closest('.menu-item');
     amountInput.value = 1;
     amountModal.classList.add('active');
+    amountInput.focus();
   }
+  window.openAmountPopup = openAmountPopup;
+
   function closeAmountPopup() {
     currentAmountItem = null;
     amountModal.classList.remove('active');
   }
+  window.closeAmountPopup = closeAmountPopup;
+
   function confirmAmount() {
     const amount = parseInt(amountInput.value);
     if (isNaN(amount) || amount < 1 || amount > 50) {
       alert('Voer een getal in tussen 1 en 50.');
+      amountInput.focus();
       return;
     }
     const name = currentAmountItem.dataset.name;
@@ -602,6 +610,7 @@
     updateCartCount();
     closeAmountPopup();
   }
+  window.confirmAmount = confirmAmount;
 
   // Update cart count display
   function updateCartCount() {
@@ -614,10 +623,13 @@
   cartBtn.addEventListener('click', () => {
     renderCartItems();
     cartModal.classList.add('active');
+    orderNotes.focus();
   });
+
   function closeCart() {
     cartModal.classList.remove('active');
   }
+  window.closeCart = closeCart;
 
   // Render cart items
   function renderCartItems() {
@@ -626,7 +638,7 @@
       return;
     }
     cartItemsDiv.innerHTML = '';
-    cart.forEach((item, i) => {
+    cart.forEach((item) => {
       const div = document.createElement('div');
       div.textContent = `${item.name} x${item.amount} - €${(item.price * item.amount).toFixed(2)}`;
       cartItemsDiv.appendChild(div);
@@ -656,26 +668,27 @@
     ordersData.orders.push(newOrder);
     await saveOrdersData();
 
-    // reset
+    // reset winkelmandje
     cart = [];
     updateCartCount();
     orderNotes.value = '';
     closeCart();
 
-    // Show keep open screen met ordernummer
+    // Toon keep open scherm met bestelnummer
     orderNumberDisplay.textContent = `#${orderNumber}`;
     keepOpenScreen.classList.add('active');
 
-    // Force update operator en screen
+    // Update operator en scherm views
     if(loggedInOperator) renderOperatorOrders();
     if(loggedInScreen) renderScreenOrders();
   }
+  window.placeOrder = placeOrder;
 
   function closeKeepOpen() {
     keepOpenScreen.classList.remove('active');
-    // Terug naar hoofd bestel scherm
     location.hash = '#/';
   }
+  window.closeKeepOpen = closeKeepOpen;
 
   // Operator login
   async function operatorLogin() {
@@ -685,16 +698,20 @@
     if(user === 'Operator' && pass === '8008') {
       loggedInOperator = true;
       location.hash = '#/operatorview';
-      loadOrdersData();
+      await loadOrdersData();
       renderOperatorOrders();
     } else {
       alert('Verkeerde inloggegevens.');
     }
   }
+  document.getElementById('operatorLoginBtn').addEventListener('click', operatorLogin);
+
   function logoutOperator() {
     loggedInOperator = false;
     location.hash = '#/';
   }
+  window.logoutOperator = logoutOperator;
+  document.getElementById('operatorLogoutBtn').addEventListener('click', logoutOperator);
 
   // Screen login
   async function screenLogin() {
@@ -704,24 +721,26 @@
     if(user === 'OperatorScreen' && pass === '8008') {
       loggedInScreen = true;
       location.hash = '#/screenview';
-      loadOrdersData();
+      await loadOrdersData();
       renderScreenOrders();
     } else {
       alert('Verkeerde inloggegevens.');
     }
   }
+  document.getElementById('screenLoginBtn').addEventListener('click', screenLogin);
+
   function screenLogout() {
     loggedInScreen = false;
     location.hash = '#/';
   }
+  window.screenLogout = screenLogout;
+  document.getElementById('screenLogoutBtn').addEventListener('click', screenLogout);
 
-  // Load and save data bij API JSONBin
+  // Load and save data JSONBin
   async function loadOrdersData() {
     try {
       const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-        headers: {
-          'X-Master-Key': API_KEY
-        }
+        headers: { 'X-Master-Key': API_KEY }
       });
       const json = await res.json();
       if(json.record) {
@@ -762,10 +781,13 @@
       const div = document.createElement('div');
       div.className = 'order-item';
       div.textContent = `#${order.number} - ${new Date(order.created).toLocaleString()} - Status: ${statusText(order.status)}`;
-      div.onclick = () => openOrderDetail(order.number);
+      div.tabIndex = 0;
+      div.setAttribute('role','button');
+      div.addEventListener('click', () => openOrderDetail(order.number));
       operatorOrdersDiv.appendChild(div);
     });
   }
+
   // Open order detail modal
   function openOrderDetail(orderNumber) {
     editingOrder = ordersData.orders.find(o => o.number === orderNumber);
@@ -775,12 +797,16 @@
     orderStatusSelect.value = editingOrder.status;
     extraTextInput.value = editingOrder.extraText || '';
     orderDetailModal.classList.add('active');
+    orderStatusSelect.focus();
   }
+
   // Close order detail
   function closeOrderDetail() {
     orderDetailModal.classList.remove('active');
     editingOrder = null;
   }
+  window.closeOrderDetail = closeOrderDetail;
+
   // Update order (status en extra tekst)
   async function updateOrder() {
     if(!editingOrder) return;
@@ -791,6 +817,8 @@
     renderScreenOrders();
     closeOrderDetail();
   }
+  window.updateOrder = updateOrder;
+
   // Delete order
   async function deleteOrder() {
     if(!editingOrder) return;
@@ -801,6 +829,7 @@
     renderScreenOrders();
     closeOrderDetail();
   }
+  window.deleteOrder = deleteOrder;
 
   // Render screen orders
   function renderScreenOrders() {
@@ -833,7 +862,7 @@
     }
   }
 
-  // Poll alle 5 seconden de data
+  // Poll elke 5 seconden data bij API
   setInterval(async () => {
     await loadOrdersData();
     if(loggedInOperator) renderOperatorOrders();
@@ -848,16 +877,10 @@
     return status;
   }
 
-  // Terug naar hoofd bestel scherm vanuit login
-  function backToMain() {
-    location.hash = '#/';
-  }
-
-  // Init routing
+  // Start app
   handleRoute();
 
 })();
 </script>
-
 </body>
 </html>
