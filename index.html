@@ -25,6 +25,21 @@
   }
   header h1 {
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5em;
+  }
+  /* Home icon */
+  #homeIcon {
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    fill: white;
+    transition: fill 0.3s;
+  }
+  #homeIcon:hover {
+    fill: #5c8a8a;
   }
   nav a {
     color: #ccc;
@@ -267,12 +282,13 @@
     padding-bottom: 10px;
     font-size: 1.5em;
     font-weight: bold;
+    text-align: center;
   }
   .order-item-screen {
     padding: 20px;
     margin-bottom: 10px;
     border-radius: 5px;
-    font-size: 3em;
+    font-size: 4em;
     font-weight: bold;
     text-align: center;
     user-select: none;
@@ -325,8 +341,14 @@
 <body>
 
 <header>
-  <h1>Joey's Restaurant</h1>
+  <h1>
+    <svg id="homeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-label="Home" role="img" tabindex="0" title="Home">
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </svg>
+    Joey's Restaurant
+  </h1>
   <nav>
+    <a href="#/">Bestellen</a>
     <a href="#/operatorlogin">Operator Login</a>
     <a href="#/screenlogin">Display Login</a>
   </nav>
@@ -399,82 +421,79 @@
 </main>
 
 <!-- Winkelmandje knop -->
-<div id="cartBtn" role="button" aria-label="Winkelmandje openen" style="display:none;">
-  Winkelmandje <span id="cartCount">0</span>
+<div id="cartBtn" role="button" aria-label="Winkelmandje" tabindex="0" style="display:none;">
+  Winkelmandje (<span id="cartCount">0</span>)
 </div>
 
 <!-- Winkelmandje modal -->
-<div id="cartModal" class="modal" aria-modal="true" role="dialog" aria-labelledby="cartTitle" tabindex="-1">
+<div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle" tabindex="-1">
   <div class="modal-content">
-    <h2 id="cartTitle">Winkelmandje</h2>
+    <h2 id="cartModalTitle">Je winkelmandje</h2>
     <div id="cartItems"></div>
-    <div style="margin-top:15px; text-align:right;">
-      <button class="btn cancel" onclick="closeCart()">Sluiten</button>
-    </div>
+    <button onclick="closeCart()">Sluiten</button>
   </div>
 </div>
 
-<!-- Aantal chips popup -->
-<div id="amountModal" class="modal" aria-modal="true" role="dialog" aria-labelledby="amountTitle" tabindex="-1">
+<!-- Aantal kiezen modal -->
+<div id="amountModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="amountModalTitle" tabindex="-1">
   <div class="modal-content">
-    <h2 id="amountTitle">Aantal chips kiezen</h2>
+    <h2 id="amountModalTitle">Kies aantal chips</h2>
     <input type="number" id="amountInput" min="1" max="50" value="1" />
-    <div style="margin-top: 20px; text-align:right;">
-      <button class="btn" onclick="confirmAmount()">Bevestigen</button>
-      <button class="btn cancel" onclick="closeAmountPopup()">Annuleren</button>
+    <div style="margin-top: 15px;">
+      <button onclick="confirmAmount()">Bevestigen</button>
+      <button onclick="closeAmountPopup()">Annuleren</button>
     </div>
   </div>
 </div>
 
 <!-- Keep open scherm -->
-<div id="keepOpenScreen" class="modal" aria-modal="true" role="dialog" aria-labelledby="keepOpenTitle" tabindex="-1">
+<div id="keepOpenScreen" tabindex="0" aria-live="polite" aria-atomic="true">
   <div>
-    <h2 id="keepOpenTitle">Bestelling geplaatst!</h2>
-    <p>Uw bestelnummer is:</p>
-    <h2 id="orderNumberDisplay">#0</h2>
-    <p><strong>Laat deze website open tot uw bestelling klaar is.</strong></p>
-    <button class="btn" onclick="closeKeepOpen()">Terug naar menu</button>
+    <h2>Bestelling ontvangen!</h2>
+    <p>Je bestelnummer is <span id="orderNumberDisplay">#0</span></p>
+    <p><strong>Laat deze website open tot dat uw bestelling er is.</strong></p>
+    <button onclick="closeKeepOpen()">Sluiten</button>
   </div>
 </div>
 
-<!-- Operator view -->
-<main id="operatorView" style="display:none; padding:20px;">
-  <h2>Operator dashboard</h2>
-  <button class="btn cancel" id="operatorLogoutBtn" style="float:right;">Uitloggen</button>
-  <div id="operatorOrders" aria-live="polite" tabindex="0" style="margin-top:40px;"></div>
-</main>
+<!-- Operator dashboard -->
+<div id="operatorView" style="display:none; padding:20px;">
+  <h2>Operator Dashboard</h2>
+  <button id="operatorLogoutBtn">Uitloggen</button>
+  <h3>Bestellingen</h3>
+  <div id="operatorOrders" tabindex="0" aria-live="polite" aria-atomic="true"></div>
+</div>
 
-<!-- Order detail modal voor operator -->
-<div id="orderDetailModal" class="modal" aria-modal="true" role="dialog" aria-labelledby="orderDetailTitle" tabindex="-1">
+<!-- Order detail modal -->
+<div id="orderDetailModal" class="modal" role="dialog" aria-modal="true" tabindex="-1">
   <div class="modal-content">
-    <h2 id="orderDetailTitle">Bestelling Details</h2>
+    <h2>Bestelling details</h2>
     <pre id="orderDetailContent"></pre>
-
-    <label for="orderStatusSelect">Status:</label>
-    <select id="orderStatusSelect" aria-label="Status kiezen">
+    <label for="orderStatusSelect">Status</label>
+    <select id="orderStatusSelect">
       <option value="pending">In Behandeling</option>
       <option value="ready">Klaar</option>
-      <option value="delayed">Kan langer duren</option>
+      <option value="longer">Kan langer duren</option>
     </select>
-
-    <label for="extraText">Extra tekst (optioneel):</label>
-    <textarea id="extraText" rows="3" placeholder="Bijv. spoed, allergie..."></textarea>
-
-    <div style="margin-top: 20px; text-align:right;">
-      <button class="btn" onclick="updateOrder()">Opslaan</button>
-      <button class="btn cancel" onclick="deleteOrder()">Verwijderen</button>
-      <button class="btn cancel" onclick="closeOrderDetail()">Sluiten</button>
+    <label for="extraText">Extra tekst</label>
+    <textarea id="extraText" rows="2" placeholder="Bijv. vertraging of info..."></textarea>
+    <div style="margin-top: 15px;">
+      <button onclick="updateOrder()">Opslaan</button>
+      <button onclick="deleteOrder()" style="background:#a85c5c; color:white;">Verwijderen</button>
+      <button onclick="closeOrderDetail()">Sluiten</button>
     </div>
   </div>
 </div>
 
 <!-- Display scherm -->
-<div id="screenView" style="display:none;">
-  <div id="screenOrdersWrapper" style="display:flex; gap:40px; padding:20px; height:100vh; box-sizing:border-box; background:#222; color:white; overflow-y:auto;">
-    <div id="screenPendingOrders" style="flex:1;">
+<div id="screenView" style="display:none; padding:20px;">
+  <h2>Display Scherm</h2>
+  <button onclick="logoutScreen()">Uitloggen</button>
+  <div id="screenOrdersWrapper" style="display:flex; gap:40px; margin-top:20px;">
+    <div id="screenPendingOrders" aria-live="polite" aria-atomic="true" style="flex:1;">
       <h3>In Behandeling</h3>
     </div>
-    <div id="screenReadyOrders" style="flex:1;">
+    <div id="screenReadyOrders" aria-live="polite" aria-atomic="true" style="flex:1;">
       <h3>Klaar</h3>
     </div>
   </div>
@@ -490,75 +509,78 @@
   let orderCounter = 0;
   let cart = [];
   let currentAmountItem = null;
-  let currentAmountValue = 1;
-  let selectedOrderId = null;
 
-  // ELEMENTS
+  // Elements
   const loginPages = document.getElementById('loginPages');
   const operatorLoginPage = document.getElementById('operatorLoginPage');
   const screenLoginPage = document.getElementById('screenLoginPage');
-
   const mainView = document.getElementById('mainView');
   const operatorView = document.getElementById('operatorView');
   const screenView = document.getElementById('screenView');
-
   const cartBtn = document.getElementById('cartBtn');
   const cartCount = document.getElementById('cartCount');
   const cartModal = document.getElementById('cartModal');
   const cartItems = document.getElementById('cartItems');
-
   const amountModal = document.getElementById('amountModal');
   const amountInput = document.getElementById('amountInput');
-
   const keepOpenScreen = document.getElementById('keepOpenScreen');
   const orderNumberDisplay = document.getElementById('orderNumberDisplay');
-
   const operatorOrders = document.getElementById('operatorOrders');
   const operatorLogoutBtn = document.getElementById('operatorLogoutBtn');
-
   const orderDetailModal = document.getElementById('orderDetailModal');
   const orderDetailContent = document.getElementById('orderDetailContent');
   const orderStatusSelect = document.getElementById('orderStatusSelect');
   const extraText = document.getElementById('extraText');
-
   const screenPendingOrders = document.getElementById('screenPendingOrders');
   const screenReadyOrders = document.getElementById('screenReadyOrders');
-
-  // LOGIN buttons
   const operatorLoginBtn = document.getElementById('operatorLoginBtn');
   const screenLoginBtn = document.getElementById('screenLoginBtn');
-
-  // LOGIN inputs
   const loginUserInput = document.getElementById('loginUser');
   const loginPassInput = document.getElementById('loginPass');
   const screenUserInput = document.getElementById('screenUser');
   const screenPassInput = document.getElementById('screenPass');
-
-  // TABS
   const tabsButtons = document.querySelectorAll('#tabs button');
   const tabContents = document.querySelectorAll('.tab-content');
+  const homeIcon = document.getElementById('homeIcon');
 
-  // ON STARTUP
+  // On load
   window.onload = () => {
     loadData();
-    showLoginPage();
+    handleHash();
   };
 
-  // Load data from localStorage
+  // Load data
   function loadData() {
     const savedOrders = localStorage.getItem(STORAGE_ORDERS);
     orders = savedOrders ? JSON.parse(savedOrders) : [];
     const savedCounter = localStorage.getItem(STORAGE_COUNTER);
     orderCounter = savedCounter ? Number(savedCounter) : 0;
   }
-  // Save orders and counter
+  // Save data
   function saveData() {
     localStorage.setItem(STORAGE_ORDERS, JSON.stringify(orders));
     localStorage.setItem(STORAGE_COUNTER, orderCounter.toString());
   }
 
-  // Show login page depending on hash
-  function showLoginPage() {
+  // Hash change handler
+  window.addEventListener('hashchange', handleHash);
+  function handleHash() {
+    const hash = location.hash || '#/';
+    if(hash === '#/operatorlogin') {
+      showLoginPage('operator');
+    } else if(hash === '#/screenlogin') {
+      showLoginPage('screen');
+    } else if(hash === '#/operator') {
+      showOperatorView();
+    } else if(hash === '#/screen') {
+      showScreenView();
+    } else {
+      showGuestView();
+    }
+  }
+
+  // Show login page
+  function showLoginPage(type) {
     loginPages.style.display = 'flex';
     mainView.style.display = 'none';
     operatorView.style.display = 'none';
@@ -568,24 +590,20 @@
     operatorLoginPage.style.display = 'none';
     screenLoginPage.style.display = 'none';
 
-    if(location.hash === '#/operatorlogin') {
+    if(type === 'operator') {
       operatorLoginPage.style.display = 'block';
-    } else if(location.hash === '#/screenlogin') {
+    } else if(type === 'screen') {
       screenLoginPage.style.display = 'block';
-    } else {
-      // Default guest view = show mainView
-      showGuestView();
-      return;
     }
   }
 
-  // Show guest bestel scherm
+  // Show guest view
   function showGuestView() {
     loginPages.style.display = 'none';
     mainView.style.display = 'block';
     operatorView.style.display = 'none';
     screenView.style.display = 'none';
-    cartBtn.style.display = 'flex';
+    cartBtn.style.display = cart.length > 0 ? 'flex' : 'none';
   }
 
   // Show operator dashboard
@@ -598,7 +616,7 @@
     renderOperatorOrders();
   }
 
-  // Show screen display view
+  // Show screen display
   function showScreenView() {
     loginPages.style.display = 'none';
     mainView.style.display = 'none';
@@ -608,7 +626,7 @@
     renderScreenOrders();
   }
 
-  // TABS functionality
+  // Tabs logic
   tabsButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       tabsButtons.forEach(b => {
@@ -627,7 +645,7 @@
     });
   });
 
-  // ADD TO CART
+  // Add to cart (for normal items)
   function addToCart(e) {
     const menuItem = e.target.closest('.menu-item');
     if(!menuItem) return;
@@ -636,7 +654,7 @@
     addItemToCart(name, price, 1);
   }
 
-  // OPEN AMOUNT POPUP for chips
+  // Open amount popup (for chips)
   function openAmountPopup(e) {
     const menuItem = e.target.closest('.menu-item');
     if(!menuItem) return;
@@ -662,9 +680,8 @@
     closeAmountPopup();
   }
 
-  // Add item to cart with amount, merge same items
+  // Add item to cart, merge same items
   function addItemToCart(name, price, amount) {
-    // Check if already in cart with same name and price
     const existing = cart.find(i => i.name === name && i.price === price);
     if(existing) {
       existing.amount += amount;
@@ -674,19 +691,15 @@
     updateCartCount();
   }
 
-  // Update cart count on button
+  // Update cart count
   function updateCartCount() {
     let total = 0;
     for(const i of cart) total += i.amount;
     cartCount.textContent = total;
-    if(total > 0) {
-      cartBtn.style.display = 'flex';
-    } else {
-      cartBtn.style.display = 'none';
-    }
+    cartBtn.style.display = total > 0 ? 'flex' : 'none';
   }
 
-  // OPEN and CLOSE cart modal
+  // Cart button open
   cartBtn.addEventListener('click', () => {
     renderCartItems();
     cartModal.classList.add('active');
@@ -708,7 +721,7 @@
     cartItems.innerHTML = html;
   }
 
-  // PLACE ORDER
+  // Place order
   document.getElementById('placeOrderBtn').addEventListener('click', () => {
     if(cart.length === 0) {
       alert('Je winkelmandje is leeg!');
@@ -721,14 +734,12 @@
   function placeOrder(notes) {
     orderCounter++;
     const orderId = orderCounter;
-    // Maak order tekst
     let orderText = '';
     for(const item of cart) {
       orderText += `${item.name} x${item.amount} - €${(item.price*item.amount).toFixed(2)}\n`;
     }
     if(notes) orderText += `Opmerkingen: ${notes}\n`;
 
-    // Nieuwe order toevoegen
     orders.push({
       id: orderId,
       orderText,
@@ -738,26 +749,22 @@
     });
     saveData();
 
-    // Leeg winkelmandje + opmerkingen veld
     cart = [];
     updateCartCount();
     document.getElementById('orderNotes').value = '';
 
-    // Toon keep open scherm met ordernummer
     orderNumberDisplay.textContent = `#${orderId}`;
     keepOpenScreen.classList.add('active');
 
-    // Update scherm en operator als die open zijn
     renderScreenOrders();
     renderOperatorOrders();
   }
-
   function closeKeepOpen() {
     keepOpenScreen.classList.remove('active');
     showGuestView();
   }
 
-  // OPERATOR LOGIN
+  // Operator login
   operatorLoginBtn.addEventListener('click', () => {
     const user = loginUserInput.value.trim();
     const pass = loginPassInput.value.trim();
@@ -771,15 +778,15 @@
     }
   });
 
-  // OPERATOR LOGOUT
+  // Operator logout
   operatorLogoutBtn.addEventListener('click', () => {
     if(confirm('Weet je zeker dat je wil uitloggen?')) {
-      showLoginPage();
+      showLoginPage('operator');
       history.pushState(null,null,'#/operatorlogin');
     }
   });
 
-  // DISPLAY SCREEN LOGIN
+  // Screen login
   screenLoginBtn.addEventListener('click', () => {
     const user = screenUserInput.value.trim();
     const pass = screenPassInput.value.trim();
@@ -793,21 +800,28 @@
     }
   });
 
-  // RENDER OPERATOR ORDERS
+  // Screen logout function
+  function logoutScreen() {
+    if(confirm('Weet je zeker dat je wil uitloggen?')) {
+      showLoginPage('screen');
+      history.pushState(null,null,'#/screenlogin');
+    }
+  }
+
+  // Render operator orders
   function renderOperatorOrders() {
     if(orders.length === 0) {
       operatorOrders.innerHTML = '<p>Geen bestellingen.</p>';
       return;
     }
-    // Sorteer op timestamp ascending
     const sorted = orders.slice().sort((a,b) => a.timestamp - b.timestamp);
     let html = '';
     for(const order of sorted) {
-      html += `<div class="order-item" tabindex="0" data-id="${order.id}">Bestelnummer #${order.id} - Status: ${order.status}</div>`;
+      html += `<div class="order-item" tabindex="0" data-id="${order.id}">Bestelnummer #${order.id} - Status: ${statusToText(order.status)}${order.extraText ? ' - ' + order.extraText : ''}</div>`;
     }
     operatorOrders.innerHTML = html;
 
-    // Voeg klik event toe op elk order-item
+    // Events to open detail
     const items = operatorOrders.querySelectorAll('.order-item');
     items.forEach(item => {
       item.onclick = () => openOrderDetail(item.getAttribute('data-id'));
@@ -815,7 +829,18 @@
     });
   }
 
-  // OPEN ORDER DETAIL MODAL
+  // Status to readable text
+  function statusToText(status) {
+    switch(status) {
+      case 'pending': return 'In Behandeling';
+      case 'ready': return 'Klaar';
+      case 'longer': return 'Kan langer duren';
+      default: return status;
+    }
+  }
+
+  // Open order detail modal
+  let selectedOrderId = null;
   function openOrderDetail(id) {
     selectedOrderId = Number(id);
     const order = orders.find(o => o.id === selectedOrderId);
@@ -830,7 +855,7 @@
     selectedOrderId = null;
   }
 
-  // UPDATE ORDER vanuit modal
+  // Update order
   function updateOrder() {
     if(selectedOrderId === null) return;
     const order = orders.find(o => o.id === selectedOrderId);
@@ -843,7 +868,7 @@
     closeOrderDetail();
   }
 
-  // DELETE ORDER
+  // Delete order
   function deleteOrder() {
     if(selectedOrderId === null) return;
     if(!confirm('Weet je zeker dat je deze bestelling wilt verwijderen?')) return;
@@ -854,12 +879,11 @@
     closeOrderDetail();
   }
 
-  // RENDER SCREEN ORDERS
+  // Render screen display orders
   function renderScreenOrders() {
     screenPendingOrders.innerHTML = '';
     screenReadyOrders.innerHTML = '';
 
-    // Sorteer op timestamp
     const sorted = orders.slice().sort((a,b) => a.timestamp - b.timestamp);
 
     for(const order of sorted) {
@@ -876,50 +900,32 @@
     }
   }
 
-  // Polling: auto update schermen elke 3 seconden
+  // Polling updates elke 3 sec
+  let lastReadyIds = new Set();
   setInterval(() => {
     if(operatorView.style.display === 'block') {
       renderOperatorOrders();
     }
     if(screenView.style.display === 'flex') {
-      // Detecteer nieuwe orders klaar en speel sound
-      const readyOrders = orders.filter(o => o.status === 'ready');
-      if(readyOrders.length > 0) playDoneSound();
+      const readyOrders = orders.filter(o => o.status === 'ready').map(o => o.id);
+      // Check nieuwe klaar orders
+      const newReady = readyOrders.filter(id => !lastReadyIds.has(id));
+      if(newReady.length > 0) playDoneSound();
+      lastReadyIds = new Set(readyOrders);
       renderScreenOrders();
     }
   }, 3000);
 
-  // Speel geluid af bij klaar
-  let doneSoundPlayedFor = new Set();
+  // Geluid afspelen als bestelling klaar is
   function playDoneSound() {
-    // Check welke orders net klaar zijn
-    const readyOrders = orders.filter(o => o.status === 'ready');
-    for(const order of readyOrders) {
-      if(doneSoundPlayedFor.has(order.id)) continue;
-      const audio = new Audio('DoneSoundForScreen.mp3');
-      audio.play().catch(e => console.log('Geen sound? ', e));
-      doneSoundPlayedFor.add(order.id);
-    }
+    const sound = new Audio('DoneSoundForScreen.mp3');
+    sound.play().catch(e => { /* fallback geen geluid */ });
   }
 
-  // Init event listeners
-
-  // Logout nav links
-  window.addEventListener('hashchange', () => {
-    if(location.hash === '#/operatorlogin' || location.hash === '#/screenlogin') {
-      showLoginPage();
-    } else if(location.hash === '#/operator') {
-      showOperatorView();
-    } else if(location.hash === '#/screen') {
-      showScreenView();
-    } else {
-      showGuestView();
-    }
+  // Home icon click
+  homeIcon.addEventListener('click', () => {
+    location.hash = '#/';
   });
-
-  // TABS handled in earlier code
-
-  // Alle helpers en listeners hierboven
 
 </script>
 
