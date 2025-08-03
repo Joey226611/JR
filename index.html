@@ -40,9 +40,10 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin: 5px;
     }
 
-    #venue {
+    #venue, #login-view {
       padding: 20px;
     }
 
@@ -88,17 +89,16 @@
       padding-top: 10px;
     }
 
-    .login {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
     .login input {
       margin: 5px;
     }
 
     .status-buttons button {
       margin-left: 5px;
+    }
+
+    #login-view {
+      display: none;
     }
 
     @media (max-width: 600px) {
@@ -118,16 +118,10 @@
     <img src="RLogo.jpg" alt="Logo" />
     <h1>Welkom bij MyOrder</h1>
     <button id="start-btn">START</button>
+    <button id="login-btn-show">Operator Login</button>
   </header>
 
   <div id="venue" style="display:none;">
-    <div class="login">
-      <label>Username: <input id="username"></label>
-      <label>Password: <input id="password" type="password"></label>
-      <button id="login-btn">Inloggen</button>
-      <div id="login-status"></div>
-    </div>
-
     <nav>
       <button data-tab="dranken">Dranken</button>
       <button data-tab="fingerfood">Fingerfood</button>
@@ -171,20 +165,59 @@
 
     <button id="bestel-btn">Bestellen</button>
     <div id="order-summary" class="order-summary"></div>
+  </div>
 
+  <div id="login-view">
+    <h2>Operator Login</h2>
+    <label>Gebruikersnaam: <input id="username"></label>
+    <label>Wachtwoord: <input id="password" type="password"></label>
+    <button id="login-submit">Inloggen</button>
+    <div id="login-status"></div>
     <div id="operator-panel" style="display:none;">
-      <h2>Operator paneel</h2>
+      <h3>Bestellingen</h3>
       <ul id="orders-list"></ul>
     </div>
   </div>
 
 <script>
-let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-let nextOrderId = orders.length ? Math.max(...orders.map(o => o.id)) + 1 : 1;
-let loggedIn = false;
+const BIN_ID = "688f6efe7b4b8670d8ac3f46";
+const API_KEY = "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O";
+const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+let orders = [];
+let lastSummaryOrder = null;
+
+function fetchOrders() {
+  fetch(API_URL, {
+    headers: { 'X-Master-Key': API_KEY }
+  })
+    .then(res => res.json())
+    .then(data => {
+      orders = data.record.orders || [];
+      updateOperatorPanel();
+    });
+}
 
 function saveOrders() {
-  localStorage.setItem('orders', JSON.stringify(orders));
+  fetch(API_URL, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': API_KEY
+    },
+    body: JSON.stringify({ orders })
+  });
+}
+
+function showSummary(order) {
+  lastSummaryOrder = order;
+  const div = document.getElementById('order-summary');
+  let html = `<h3>Bestelling #${order.id}</h3><p>Status: ${order.status}</p><ul>`;
+  order.items.forEach(i => {
+    html += `<li>${i.name}: ${i.qty} × €${i.price.toFixed(3)} = €${(i.qty * i.price).toFixed(2)}</li>`;
+  });
+  html += `</ul><strong>Totaal: €${order.total}</strong>`;
+  div.innerHTML = html;
 }
 
 function updateOperatorPanel() {
@@ -199,7 +232,6 @@ function updateOperatorPanel() {
       </span>`;
     ul.appendChild(li);
   });
-
   ul.querySelectorAll('button').forEach(btn => {
     btn.onclick = () => {
       const id = parseInt(btn.dataset.id);
@@ -215,19 +247,6 @@ function updateOperatorPanel() {
   });
 }
 
-function showSummary(order) {
-  lastSummaryOrder = order;
-  const div = document.getElementById('order-summary');
-  let html = `<h3>Bestelling #${order.id}</h3><p>Status: ${order.status}</p><ul>`;
-  order.items.forEach(i => {
-    html += `<li>${i.name}: ${i.qty} × €${i.price.toFixed(3)} = €${(i.qty * i.price).toFixed(2)}</li>`;
-  });
-  html += `</ul><strong>Totaal: €${order.total}</strong>`;
-  div.innerHTML = html;
-}
-
-let lastSummaryOrder = null;
-
 function bestel() {
   const items = [];
   let total = 0;
@@ -240,28 +259,33 @@ function bestel() {
     }
   });
   if (!items.length) return alert('Kies minstens één item.');
-  const order = { id: nextOrderId++, items, total: total.toFixed(2), status: 'nieuw' };
+  const id = Date.now();
+  const order = { id, items, total: total.toFixed(2), status: 'nieuw' };
   orders.push(order);
   saveOrders();
   showSummary(order);
-  if (loggedIn) updateOperatorPanel();
 }
 
 document.getElementById('start-btn').onclick = () => {
   document.getElementById('venue').style.display = 'block';
   document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('login-btn-show').style.display = 'none';
 };
 
 document.getElementById('bestel-btn').onclick = bestel;
 
-document.getElementById('login-btn').onclick = () => {
+document.getElementById('login-btn-show').onclick = () => {
+  document.getElementById('venue').style.display = 'none';
+  document.getElementById('login-view').style.display = 'block';
+};
+
+document.getElementById('login-submit').onclick = () => {
   const u = document.getElementById('username').value;
   const p = document.getElementById('password').value;
   if (u === 'Operator' && p === '8008') {
-    loggedIn = true;
     document.getElementById('login-status').textContent = 'Ingelogd als Operator';
     document.getElementById('operator-panel').style.display = 'block';
-    updateOperatorPanel();
+    fetchOrders();
   } else {
     alert('Verkeerde inloggegevens.');
   }
