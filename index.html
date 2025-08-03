@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Restaurant Bestelsysteem</title>
 <style>
-  /* Algemene reset en basis */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f5f5f5;
@@ -33,7 +32,6 @@
     border-radius: 10px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
   }
-  /* Tabs */
   #tabs {
     display: flex;
     gap: 10px;
@@ -53,7 +51,6 @@
     background: #27ae60;
     color: white;
   }
-  /* Tab content */
   .tab-content {
     display: none;
   }
@@ -62,7 +59,6 @@
     grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
     gap: 15px;
   }
-  /* Menu items */
   .menu-item {
     background: #e9f5e9;
     border-radius: 8px;
@@ -99,8 +95,6 @@
   .menu-item .add-btn:hover {
     background: #1e8449;
   }
-
-  /* Cart button top right */
   #cartBtn {
     position: fixed;
     top: 15px;
@@ -123,8 +117,6 @@
     padding: 4px 9px;
     margin-left: 8px;
   }
-
-  /* Modals */
   .modal {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -194,8 +186,6 @@
   .btn.cancel:hover {
     background: #888;
   }
-
-  /* Keep Open scherm */
   #keepOpenScreen {
     text-align: center;
   }
@@ -209,8 +199,6 @@
     color: #27ae60;
     margin-bottom: 15px;
   }
-
-  /* Operator view */
   #operatorView {
     max-width: 700px;
     margin: 0 auto;
@@ -238,7 +226,6 @@
   .order-item:hover {
     background: #c3f0c3;
   }
-  /* Order detail modal */
   #orderDetailModal p {
     margin: 6px 0;
   }
@@ -247,8 +234,6 @@
     margin-top: 6px;
     margin-bottom: 15px;
   }
-
-  /* Screen account view */
   #screenView {
     max-width: 650px; 
     margin: 30px auto; 
@@ -263,7 +248,6 @@
     gap: 20px;
     color: #333;
   }
-
   #screenPendingOrders, #screenReadyOrders {
     flex: 1;
     border-radius: 8px;
@@ -276,17 +260,14 @@
     flex-wrap: wrap;
     gap: 15px;
   }
-
   #screenPendingOrders {
     color: #6f4e37; /* bruin */
     background-color: #f3e9dc;
   }
-
   #screenReadyOrders {
     color: #2e7d32; /* groen */
     background-color: #d7f0d7;
   }
-
   #screenPendingOrders div.order-item, #screenReadyOrders div.order-item {
     background: transparent;
     border: 2px solid currentColor;
@@ -297,12 +278,9 @@
     cursor: default;
     user-select: none;
   }
-
-  /* Login buttons top right */
   #loginButton, #screenLoginButton {
     position: fixed;
     top: 15px;
-    right: 90px;
     background: #27ae60;
     border: none;
     color: white;
@@ -314,11 +292,12 @@
     z-index: 999;
     user-select: none;
   }
+  #loginButton {
+    right: 90px;
+  }
   #screenLoginButton {
     right: 15px;
   }
-
-  /* Language selector top right */
   #languageSelect {
     position: fixed;
     top: 15px;
@@ -330,18 +309,25 @@
     background: white;
     user-select: none;
   }
-
-  /* Scrollbars voor modals en orders */
-  #operatorOrders::-webkit-scrollbar,
-  #screenPendingOrders::-webkit-scrollbar,
-  #screenReadyOrders::-webkit-scrollbar {
-    width: 8px;
+  #operatorLogoutBtn, #screenLogoutBtn {
+    position: fixed;
+    bottom: 15px;
+    background: #e74c3c;
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(231, 76, 60, 0.7);
+    z-index: 999;
+    user-select: none;
   }
-  #operatorOrders::-webkit-scrollbar-thumb,
-  #screenPendingOrders::-webkit-scrollbar-thumb,
-  #screenReadyOrders::-webkit-scrollbar-thumb {
-    background: #27ae60;
-    border-radius: 10px;
+  #operatorLogoutBtn {
+    left: 15px;
+  }
+  #screenLogoutBtn {
+    left: 90px;
   }
 </style>
 </head>
@@ -355,12 +341,14 @@
 <select id="languageSelect" title="Kies taal">
   <option value="en">English</option>
   <option value="nl">Nederlands</option>
-  <!-- Voeg meer talen toe als je wil -->
 </select>
 
 <button id="loginButton">Operator Login</button>
 <button id="screenLoginButton">Scherm Login</button>
 <button id="cartBtn">Winkelmandje (<span id="cartCount">0</span>)</button>
+
+<button id="operatorLogoutBtn" style="display:none;">Operator Uitloggen</button>
+<button id="screenLogoutBtn" style="display:none;">Scherm Uitloggen</button>
 
 <main>
 
@@ -415,7 +403,6 @@
 
 </main>
 
-<!-- Amount modal (voor aantal chips bij fingerfood) -->
 <div class="modal" id="amountModal">
   <div class="modal-content">
     <h2>Aantal kiezen</h2>
@@ -428,33 +415,31 @@
   </div>
 </div>
 
-<!-- Winkelmandje modal -->
 <div class="modal" id="cartModal">
   <div class="modal-content">
     <h2>Winkelmandje</h2>
-    <div id="cartItems"></div>
-    <label for="orderNotes">Opmerkingen:</label>
-    <textarea id="orderNotes" placeholder="Vul hier eventuele opmerkingen in (bijv. extra peper)"></textarea>
+    <div id="cartItems">Winkelmandje is leeg.</div>
+    <label for="orderNotes">Opmerkingen / Allergieën (optioneel):</label>
+    <textarea id="orderNotes" placeholder="Bijv. Geen pinda's..."></textarea>
     <div class="modal-footer">
       <button class="btn" onclick="placeOrder()">Bestelling plaatsen</button>
-      <button class="btn cancel" onclick="closeCart()">Verder shoppen</button>
+      <button class="btn cancel" onclick="closeCart()">Sluiten</button>
     </div>
   </div>
 </div>
 
-<!-- Keep Open scherm na bestelling -->
 <div class="modal" id="keepOpenScreen">
   <div class="modal-content" style="text-align:center;">
-    <p id="keepOpenText">Laat deze website open tot dat je bestelling klaar is.</p>
+    <p>Uw bestelling is geplaatst! Uw bestelnummer is:</p>
     <div id="orderNumberDisplay">#0</div>
+    <p>Laat deze website open totdat uw bestelling klaar is.</p>
     <button class="btn" onclick="closeKeepOpen()">Sluiten</button>
   </div>
 </div>
 
-<!-- Operator login modal -->
 <div class="modal" id="loginModal">
   <div class="modal-content">
-    <h2>Operator Inloggen</h2>
+    <h2>Operator Login</h2>
     <label for="loginUser">Gebruikersnaam:</label>
     <input type="text" id="loginUser" autocomplete="username" />
     <label for="loginPass">Wachtwoord:</label>
@@ -466,16 +451,17 @@
   </div>
 </div>
 
-<!-- Operator view -->
 <div id="operatorView">
-  <h2>Bestellingen Overzicht</h2>
+  <h2>Operator Bestellingen</h2>
   <div id="operatorOrders">Geen bestellingen.</div>
+  <div class="modal-footer" style="margin-top:20px;">
+    <button class="btn" onclick="logoutOperator()" id="operatorLogoutBtn">Uitloggen</button>
+  </div>
 </div>
 
-<!-- Operator order detail modal -->
 <div class="modal" id="orderDetailModal">
   <div class="modal-content">
-    <h2>Bestelling Details</h2>
+    <h3>Bestelling Details</h3>
     <div id="orderDetailContent"></div>
     <label for="orderStatusSelect">Status:</label>
     <select id="orderStatusSelect">
@@ -483,8 +469,8 @@
       <option value="ready">Klaar</option>
       <option value="delayed">Kan langer duren</option>
     </select>
-    <label for="extraText">Extra tekst (communicatie klant):</label>
-    <textarea id="extraText" placeholder="Voeg hier extra info toe..."></textarea>
+    <label for="extraText">Extra tekst (communicatie):</label>
+    <textarea id="extraText" placeholder="Voeg hier een tekst toe..."></textarea>
     <div class="modal-footer">
       <button class="btn" onclick="updateOrder()">Opslaan</button>
       <button class="btn cancel" onclick="deleteOrder()">Verwijderen</button>
@@ -493,10 +479,9 @@
   </div>
 </div>
 
-<!-- Scherm account login modal -->
 <div class="modal" id="screenLoginModal">
   <div class="modal-content">
-    <h2>Scherm Inloggen</h2>
+    <h2>Scherm Account Login</h2>
     <label for="screenUser">Gebruikersnaam:</label>
     <input type="text" id="screenUser" autocomplete="username" />
     <label for="screenPass">Wachtwoord:</label>
@@ -508,7 +493,6 @@
   </div>
 </div>
 
-<!-- Scherm account view -->
 <div id="screenView">
   <div>
     <h3>In Behandeling</h3>
@@ -518,29 +502,27 @@
     <h3>Klaar</h3>
     <div id="screenReadyOrders">Laden...</div>
   </div>
+  <button class="btn" style="margin-top:15px;" onclick="screenLogout()" id="screenLogoutBtn">Uitloggen Scherm</button>
 </div>
 
 <audio id="doneSound" src="Sounds/DoneSoundForScreen.mp3" preload="auto"></audio>
 
 <script>
 (() => {
-  // JSONBin config (uit je bio)
   const BIN_ID = '688f6efe7b4b8670d8ac3f46';
   const API_KEY = '$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O';
 
-  // Data structuur
   let ordersData = { counter: 0, orders: [] };
 
-  // State
   let cart = [];
-  let currentAmountItem = null; // voor aantal kiezen
+  let currentAmountItem = null;
   let editingOrder = null;
   let loggedInOperator = false;
   let loggedInScreen = false;
   let language = 'en';
 
-  // Elementen
-  const tabs = document.querySelectorAll('.tab-btn');
+  // DOM elementen
+  const tabs = document.querySelectorAll('#tabs button');
   const cartBtn = document.getElementById('cartBtn');
   const cartCount = document.getElementById('cartCount');
   const cartModal = document.getElementById('cartModal');
@@ -557,6 +539,7 @@
   const loginPass = document.getElementById('loginPass');
   const operatorView = document.getElementById('operatorView');
   const operatorOrdersDiv = document.getElementById('operatorOrders');
+  const operatorLogoutBtn = document.getElementById('operatorLogoutBtn');
 
   const orderDetailModal = document.getElementById('orderDetailModal');
   const orderDetailContent = document.getElementById('orderDetailContent');
@@ -570,10 +553,12 @@
   const screenView = document.getElementById('screenView');
   const screenPendingOrders = document.getElementById('screenPendingOrders');
   const screenReadyOrders = document.getElementById('screenReadyOrders');
+  const screenLogoutBtn = document.getElementById('screenLogoutBtn');
   const doneSound = document.getElementById('doneSound');
 
-  // --- Taal opslaan/instellen ---
   const languageSelect = document.getElementById('languageSelect');
+
+  // Taal opslaan/laden
   function loadLanguage() {
     const saved = localStorage.getItem('language');
     if(saved) {
@@ -587,14 +572,13 @@
   languageSelect.addEventListener('change', () => {
     language = languageSelect.value;
     saveLanguage();
-    // Hier kan je evt vertalingen toepassen
   });
   loadLanguage();
 
-  // --- Tab switching ---
+  // Tabs
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t=>t.classList.remove('active'));
+      tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
       const target = tab.dataset.tab;
@@ -602,9 +586,9 @@
     });
   });
 
-  // --- Cart functies ---
+  // Winkelmandje functies
   function updateCartCount() {
-    let totalCount = cart.reduce((a,b) => a + b.amount, 0);
+    let totalCount = cart.reduce((acc, i) => acc + i.amount, 0);
     cartCount.textContent = totalCount;
   }
 
@@ -614,16 +598,14 @@
     const price = parseFloat(itemDiv.dataset.price);
 
     if(name.toLowerCase().includes('pringles')) {
-      // Voor pringles moet eerst aantal kiezen, open amount popup
       openAmountPopup(event);
       currentAmountItem = {name, price};
       return;
     }
 
-    // Voeg direct 1 toe
     let found = cart.find(i => i.name === name);
     if(found) found.amount++;
-    else cart.push({name, price, amount:1});
+    else cart.push({name, price, amount: 1});
     updateCartCount();
   }
 
@@ -672,7 +654,7 @@
     });
   }
 
-  // --- Bestelling plaatsen ---
+  // Bestelling plaatsen
   async function placeOrder() {
     if(cart.length === 0) {
       alert('Je winkelmandje is leeg.');
@@ -680,14 +662,12 @@
     }
     const notes = orderNotes.value.trim();
 
-    // Tel teller altijd door
     ordersData.counter = parseInt(ordersData.counter) || 0;
     ordersData.counter++;
 
-    // Maak nieuwe bestelling
     const newOrder = {
       id: ordersData.counter,
-      items: cart.map(i => ({name:i.name, price:i.price, amount:i.amount})),
+      items: cart.map(i => ({name: i.name, price: i.price, amount: i.amount})),
       notes: notes,
       status: 'pending',
       extraText: '',
@@ -703,44 +683,36 @@
       return;
     }
 
-    // Reset winkelmandje en opmerkingen
     cart = [];
     orderNotes.value = '';
     updateCartCount();
     closeCart();
 
-    // Toon Keep Open scherm met bestelnummer
     orderNumberDisplay.textContent = '#' + newOrder.id;
     keepOpenScreen.classList.add('active');
 
-    // Start polling voor order status updates (optioneel)
     pollOrders();
-
   }
 
   function closeKeepOpen() {
     keepOpenScreen.classList.remove('active');
   }
 
-  // --- JSONBin functies ---
+  // JSONBin functies
   async function loadOrdersData() {
     try {
       const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-        headers: {
-          'X-Master-Key': API_KEY
-        }
+        headers: { 'X-Master-Key': API_KEY }
       });
       if(!res.ok) throw new Error('Load failed');
       const json = await res.json();
       if(json && json.record) {
         ordersData = json.record;
-        // Zorg dat counter een nummer is
         ordersData.counter = parseInt(ordersData.counter) || 0;
         if(!ordersData.orders) ordersData.orders = [];
       }
     } catch(e) {
-      // fallback
-      ordersData = {counter:0, orders:[]};
+      ordersData = { counter: 0, orders: [] };
     }
   }
   async function saveOrdersData() {
@@ -756,7 +728,7 @@
     if(!res.ok) throw new Error('Save failed');
   }
 
-  // --- Operator login/logout ---
+  // Operator login/logout
   loginButton.addEventListener('click', () => {
     loginModal.classList.add('active');
   });
@@ -784,7 +756,7 @@
     if(loggedInOperator || loggedInScreen) {
       loginButton.style.display = 'none';
       screenLoginButton.style.display = loggedInScreen ? 'none' : 'inline-block';
-      // gasten menu verbergen als operator ingelogd
+
       if(loggedInOperator) {
         document.querySelector('main').style.display = 'none';
       } else {
@@ -797,7 +769,7 @@
     }
   }
 
-  // --- Operator view ---
+  // Operator view
   function showOperatorView() {
     renderOperatorOrders();
     operatorView.style.display = 'block';
@@ -805,7 +777,6 @@
   function hideOperatorView() {
     operatorView.style.display = 'none';
   }
-
   function renderOperatorOrders() {
     if(ordersData.orders.length === 0) {
       operatorOrdersDiv.textContent = 'Geen bestellingen.';
@@ -830,7 +801,7 @@
     }
   }
 
-  // --- Order detail ---
+  // Order detail
   function openOrderDetail(orderId) {
     const order = ordersData.orders.find(o => o.id === orderId);
     if(!order) return;
@@ -838,7 +809,7 @@
     orderDetailContent.innerHTML = '';
     order.items.forEach(i => {
       const p = document.createElement('p');
-      p.textContent = `${i.name} x${i.amount} - €${(i.price*i.amount).toFixed(2)}`;
+      p.textContent = `${i.name} x${i.amount} - €${(i.price * i.amount).toFixed(2)}`;
       orderDetailContent.appendChild(p);
     });
     orderStatusSelect.value = order.status || 'pending';
@@ -876,7 +847,7 @@
     }
   }
 
-  // --- Scherm account login/logout ---
+  // Scherm account login/logout
   screenLoginButton.addEventListener('click', () => {
     screenLoginModal.classList.add('active');
   });
@@ -907,7 +878,6 @@
   function hideScreenView() {
     screenView.style.display = 'none';
   }
-
   function renderScreenOrders() {
     screenPendingOrders.innerHTML = '';
     screenReadyOrders.innerHTML = '';
@@ -925,7 +895,7 @@
     });
   }
 
-  // --- Polling voor realtime update ---
+  // Polling realtime
   let pollInterval = null;
   async function pollOrders() {
     try {
@@ -941,25 +911,25 @@
         ordersData = json.record;
         ordersData.counter = parseInt(ordersData.counter) || 0;
         if(!ordersData.orders) ordersData.orders = [];
-        // Check of er nieuwe klaar orders zijn gekomen voor geluid
+
+        renderOperatorOrders();
+        renderScreenOrders();
+
+        // Check if new ready order appeared for sound
         const newReadyCount = ordersData.orders.filter(o => o.status === 'ready').length;
-        if(loggedInScreen && newReadyCount > oldReadyCount) {
+        if(newReadyCount > oldReadyCount && loggedInScreen) {
           doneSound.play();
         }
-        if(loggedInOperator) renderOperatorOrders();
-        if(loggedInScreen) renderScreenOrders();
       }
     } catch(e) {
       // fail silently
     }
   }
-  function startPolling() {
-    if(pollInterval) clearInterval(pollInterval);
-    pollInterval = setInterval(pollOrders, 3000);
-  }
-  startPolling();
 
-  // --- Init ---
+  // Start polling elke 4 sec
+  setInterval(pollOrders, 4000);
+
+  // Init
   async function init() {
     await loadOrdersData();
     updateCartCount();
@@ -967,25 +937,32 @@
   }
   init();
 
-  // --- Expose globale functies voor HTML onclick ---
+  // Bestelling na verwijderen opmerking probleem opgelost omdat we counter opslaan en niet aanpassen bij verwijderen
+  // Geen nummers herschikken
+
+  // Bestelling nummer NAN of NaF probleem opgelost door altijd parseInt
+
+  // Export functies globaal voor onclick inline
   window.addToCart = addToCart;
   window.openAmountPopup = openAmountPopup;
   window.closeAmountPopup = closeAmountPopup;
   window.confirmAmount = confirmAmount;
-  window.closeCart = closeCart;
   window.placeOrder = placeOrder;
+  window.closeCart = closeCart;
   window.closeKeepOpen = closeKeepOpen;
-  window.closeLogin = closeLogin;
   window.operatorLogin = operatorLogin;
+  window.closeLogin = closeLogin;
   window.logoutOperator = logoutOperator;
   window.openOrderDetail = openOrderDetail;
   window.closeOrderDetail = closeOrderDetail;
   window.updateOrder = updateOrder;
   window.deleteOrder = deleteOrder;
-  window.closeScreenLogin = closeScreenLogin;
   window.screenLogin = screenLogin;
+  window.closeScreenLogin = closeScreenLogin;
   window.screenLogout = screenLogout;
+
 })();
 </script>
+
 </body>
 </html>
