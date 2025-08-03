@@ -1,252 +1,304 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyOrder Restaurant</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #fffaf0;
-      color: #333;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #f8b400;
-      padding: 10px 20px;
-    }
-    header img {
-      height: 50px;
-    }
-    header button {
-      padding: 10px;
-      background-color: #fff;
-      border: 2px solid #333;
-      cursor: pointer;
-    }
-    #tabs {
-      display: flex;
-      gap: 10px;
-      background-color: #f0f0f0;
-      padding: 10px;
-      flex-wrap: wrap;
-    }
-    .tab {
-      padding: 10px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      cursor: pointer;
-    }
-    .active {
-      background-color: #f8b400;
-      color: #fff;
-    }
-    .section {
-      display: none;
-      padding: 20px;
-    }
-    .visible {
-      display: block;
-    }
-    .item {
-      margin-bottom: 10px;
-    }
-    .item input {
-      width: 50px;
-    }
-    #statusMessage {
-      color: green;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MyOrder Restaurant</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 0;
+    background-color: #fffaf0;
+    color: #333;
+  }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    background-color: #f8b400;
+    padding: 10px 20px;
+  }
+  header img {
+    height: 50px;
+  }
+  header button {
+    padding: 10px;
+    background-color: #fff;
+    border: 2px solid #333;
+    cursor: pointer;
+  }
+  #tabs {
+    display: flex; gap: 10px;
+    background-color: #f0f0f0;
+    padding: 10px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+  .active {
+    background-color: #f8b400;
+    color: #fff;
+  }
+  .section {
+    display: none;
+    padding: 20px;
+  }
+  .visible {
+    display: block;
+  }
+  .item {
+    margin-bottom: 10px;
+  }
+  .item input {
+    width: 50px;
+  }
+  #orderId {
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  #orderStatus {
+    margin-top: 5px;
+    font-weight: bold;
+    color: green;
+  }
+  #statusMessage {
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <img src="RLogo.jpg" alt="Restaurant Logo" />
-    <button onclick="openLogin()">Operator login</button>
-  </header>
+<header>
+  <img src="RLogo.jpg" alt="Restaurant Logo" />
+  <button onclick="openLogin()">Operator login</button>
+</header>
 
-  <div id="tabs">
-    <div class="tab active" onclick="switchTab('drinks')">Dranken</div>
-    <div class="tab" onclick="switchTab('fingerfood')">Fingerfood</div>
-    <div class="tab" onclick="switchTab('desserts')">Dessert & Overige</div>
-    <div class="tab" onclick="switchTab('menus')">Menu’s</div>
-  </div>
+<div id="tabs">
+  <div class="tab active" onclick="switchTab('drinks', this)">Dranken</div>
+  <div class="tab" onclick="switchTab('fingerfood', this)">Fingerfood</div>
+  <div class="tab" onclick="switchTab('desserts', this)">Dessert & Overige</div>
+  <div class="tab" onclick="switchTab('menus', this)">Menu’s</div>
+</div>
 
-  <div id="drinks" class="section visible">
-    <div class="item">Cola flesje - €0.10 <input type="number" min="0" value="0" id="cola" /></div>
-    <div class="item">Water flesje - €0.50 <input type="number" min="0" value="0" id="water" /></div>
-  </div>
-  <div id="fingerfood" class="section">
-    <div class="item">Pringles Natural (€0.001 per chip, max 50): <input type="number" min="0" max="50" value="0" id="pringlesNatural" /></div>
-    <div class="item">Pringles BBQ (€0.002 per chip, max 50): <input type="number" min="0" max="50" value="0" id="pringlesBBQ" /></div>
-  </div>
-  <div id="desserts" class="section">
-    <p>Momenteel geen items.</p>
-  </div>
-  <div id="menus" class="section">
-    <p>Momenteel geen items.</p>
-  </div>
+<div id="drinks" class="section visible">
+  <div class="item">Cola flesje - €0.10 <input type="number" min="0" value="0" id="cola" /></div>
+  <div class="item">Water flesje - €0.50 <input type="number" min="0" value="0" id="water" /></div>
+</div>
+<div id="fingerfood" class="section">
+  <div class="item">Pringles Natural (€0.10 per chip, max 50): <input type="number" min="0" max="50" value="0" id="pringlesNatural" /></div>
+  <div class="item">Pringles BBQ (€0.20 per chip, max 50): <input type="number" min="0" max="50" value="0" id="pringlesBBQ" /></div>
+</div>
+<div id="desserts" class="section">
+  <p>Momenteel geen items.</p>
+</div>
+<div id="menus" class="section">
+  <p>Momenteel geen items.</p>
+</div>
 
-  <button onclick="placeOrder()">Bestellen</button>
-  <div id="orderId"></div>
-  <div id="orderStatus"></div>
+<button id="orderButton">Bestellen</button>
+<div id="orderId"></div>
+<div id="orderStatus"></div>
 
-  <div id="loginPanel" style="display:none">
-    <h2>Operator login</h2>
-    <input type="text" id="username" placeholder="Gebruikersnaam" />
-    <input type="password" id="password" placeholder="Wachtwoord" />
-    <button onclick="login()">Log in</button>
-  </div>
+<div id="loginPanel" style="display:none">
+  <h2>Operator login</h2>
+  <input type="text" id="username" placeholder="Gebruikersnaam" />
+  <input type="password" id="password" placeholder="Wachtwoord" />
+  <button id="loginBtn">Log in</button>
+</div>
 
-  <div id="operatorPanel" style="display:none">
-    <h2>Bestellingen (live)</h2>
-    <div id="orders"></div>
-  </div>
+<div id="operatorPanel" style="display:none">
+  <h2>Bestellingen (live)</h2>
+  <div id="orders"></div>
+</div>
 
-  <script>
-    const binId = "688f6efe7b4b8670d8ac3f46";
-    const apiKey = "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O";
-    let currentOrderId = null;
+<script>
+const binId = "688f6efe7b4b8670d8ac3f46";
+const apiKey = "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O";
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('visible'));
-      document.querySelector(`#${tabId}`).classList.add('visible');
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      event.target.classList.add('active');
-    }
+let currentOrderId = null;
+let operatorLoggedIn = false;
+let pollingInterval = null;
 
-    function openLogin() {
-      document.getElementById('loginPanel').style.display = 'block';
-    }
+function switchTab(tabId, tabElem) {
+  document.querySelectorAll('.section').forEach(sec => sec.classList.remove('visible'));
+  document.getElementById(tabId).classList.add('visible');
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  tabElem.classList.add('active');
+}
 
-    function login() {
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      if (user === 'Operator' && pass === '8008') {
-        document.getElementById('loginPanel').style.display = 'none';
-        document.getElementById('operatorPanel').style.display = 'block';
-        fetchOrders();
-        setInterval(fetchOrders, 2000);
-      }
-    }
+function openLogin() {
+  document.getElementById('loginPanel').style.display = 'block';
+}
 
-    function placeOrder() {
-      const order = {
-        id: Date.now(),
-        cola: parseInt(document.getElementById('cola').value),
-        water: parseInt(document.getElementById('water').value),
-        pringlesNatural: parseInt(document.getElementById('pringlesNatural').value),
-        pringlesBBQ: parseInt(document.getElementById('pringlesBBQ').value),
-        status: 'In afwachting'
-      };
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const user = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value.trim();
+  if (user === 'Operator' && pass === '8008') {
+    operatorLoggedIn = true;
+    document.getElementById('loginPanel').style.display = 'none';
+    document.getElementById('operatorPanel').style.display = 'block';
+    startPolling();
+  } else {
+    alert('Verkeerde inloggegevens.');
+  }
+});
 
-      fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        method: 'GET',
-        headers: { 'X-Master-Key': apiKey }
-      })
-      .then(res => res.json())
-      .then(data => {
-        const orders = data.record || [];
-        orders.push(order);
-        fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': apiKey
-          },
-          body: JSON.stringify(orders)
-        })
-        .then(() => {
-          currentOrderId = order.id;
-          document.getElementById('orderId').innerText = `Bestelnummer: ${order.id}`;
-          setInterval(() => checkStatus(order.id), 2000);
-        });
-      });
-    }
+document.getElementById('orderButton').addEventListener('click', placeOrder);
 
-    function checkStatus(id) {
-      fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        headers: { 'X-Master-Key': apiKey }
-      })
-      .then(res => res.json())
-      .then(data => {
-        const order = data.record.find(o => o.id === id);
-        if (order) {
-          document.getElementById('orderStatus').innerText = `Status: ${order.status}`;
-          if (order.status === 'Klaar') alert('🎉 Je bestelling is klaar!');
+function placeOrder() {
+  const cola = parseInt(document.getElementById('cola').value) || 0;
+  const water = parseInt(document.getElementById('water').value) || 0;
+  const pringlesNatural = parseInt(document.getElementById('pringlesNatural').value) || 0;
+  const pringlesBBQ = parseInt(document.getElementById('pringlesBBQ').value) || 0;
+
+  if (cola + water + pringlesNatural + pringlesBBQ === 0) {
+    alert('Kies minstens één item.');
+    return;
+  }
+
+  const order = {
+    id: Date.now(),
+    items: [
+      { name: 'Cola', qty: cola, price: 0.10 },
+      { name: 'Water', qty: water, price: 0.50 },
+      { name: 'Pringles Natural', qty: pringlesNatural, price: 0.10 },
+      { name: 'Pringles BBQ Saus', qty: pringlesBBQ, price: 0.20 }
+    ].filter(i => i.qty > 0),
+    status: 'Nieuw'
+  };
+
+  // Fetch current orders first
+  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+    headers: { 'X-Master-Key': apiKey }
+  })
+  .then(res => res.json())
+  .then(data => {
+    let orders = data.record || [];
+    orders.push(order);
+    return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': apiKey
+      },
+      body: JSON.stringify(orders)
+    });
+  })
+  .then(() => {
+    currentOrderId = order.id;
+    document.getElementById('orderId').textContent = `Bestelnummer: ${order.id}`;
+    document.getElementById('orderStatus').textContent = `Status: ${order.status}`;
+    startPollingOrderStatus();
+    alert('Bestelling geplaatst!');
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Er is iets misgegaan met het plaatsen van de bestelling.');
+  });
+}
+
+function startPolling() {
+  fetchOrders(); // fetch direct
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(fetchOrders, 2000);
+}
+
+function fetchOrders() {
+  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+    headers: { 'X-Master-Key': apiKey }
+  })
+  .then(res => res.json())
+  .then(data => {
+    const ordersDiv = document.getElementById('orders');
+    const orders = data.record || [];
+    ordersDiv.innerHTML = '';
+    orders.forEach(order => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <strong>Bestelnummer:</strong> ${order.id}<br>
+        ${order.items.map(i => `${i.name}: ${i.qty}`).join(', ')}<br>
+        <strong>Status:</strong> ${order.status}<br>
+        <button onclick="updateStatus(${order.id}, 'In bereiding')">In bereiding</button>
+        <button onclick="updateStatus(${order.id}, 'Klaar')">Klaar</button>
+        <button onclick="deleteOrder(${order.id})">🗑️ Verwijder</button>
+        <hr>
+      `;
+      ordersDiv.appendChild(div);
+    });
+  });
+}
+
+function updateStatus(id, status) {
+  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+    headers: { 'X-Master-Key': apiKey }
+  })
+  .then(res => res.json())
+  .then(data => {
+    let orders = data.record || [];
+    orders = orders.map(o => {
+      if (o.id === id) o.status = status;
+      return o;
+    });
+    return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': apiKey
+      },
+      body: JSON.stringify(orders)
+    });
+  })
+  .then(() => {
+    fetchOrders();
+  });
+}
+
+function deleteOrder(id) {
+  fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+    headers: { 'X-Master-Key': apiKey }
+  })
+  .then(res => res.json())
+  .then(data => {
+    let orders = data.record || [];
+    orders = orders.filter(o => o.id !== id);
+    return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': apiKey
+      },
+      body: JSON.stringify(orders)
+    });
+  })
+  .then(() => {
+    fetchOrders();
+  });
+}
+
+function startPollingOrderStatus() {
+  if (currentOrderId === null) return;
+  const interval = setInterval(() => {
+    fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+      headers: { 'X-Master-Key': apiKey }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const orders = data.record || [];
+      const order = orders.find(o => o.id === currentOrderId);
+      if (order) {
+        document.getElementById('orderStatus').textContent = `Status: ${order.status}`;
+        if (order.status === 'Klaar') {
+          alert('🎉 Je bestelling is klaar!');
+          clearInterval(interval);
         }
-      });
-    }
+      }
+    });
+  }, 2000);
+}
 
-    function fetchOrders() {
-      fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        headers: { 'X-Master-Key': apiKey }
-      })
-      .then(res => res.json())
-      .then(data => {
-        const ordersDiv = document.getElementById('orders');
-        ordersDiv.innerHTML = '';
-        (data.record || []).forEach(order => {
-          const div = document.createElement('div');
-          div.innerHTML = `
-            <strong>Bestelnummer:</strong> ${order.id}<br>
-            Cola: ${order.cola}, Water: ${order.water}<br>
-            Pringles Natural: ${order.pringlesNatural}, BBQ: ${order.pringlesBBQ}<br>
-            <strong>Status:</strong> ${order.status}<br>
-            <button onclick="updateStatus(${order.id}, 'In bereiding')">In bereiding</button>
-            <button onclick="updateStatus(${order.id}, 'Klaar')">Klaar</button>
-            <button onclick="deleteOrder(${order.id})">🗑️ Verwijder</button>
-            <hr>
-          `;
-          ordersDiv.appendChild(div);
-        });
-      });
-    }
-
-    function updateStatus(id, status) {
-      fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        headers: { 'X-Master-Key': apiKey }
-      })
-      .then(res => res.json())
-      .then(data => {
-        const orders = data.record.map(o => {
-          if (o.id === id) o.status = status;
-          return o;
-        });
-        return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': apiKey
-          },
-          body: JSON.stringify(orders)
-        });
-      });
-    }
-
-    function deleteOrder(id) {
-      fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        headers: { 'X-Master-Key': apiKey }
-      })
-      .then(res => res.json())
-      .then(data => {
-        const newOrders = data.record.filter(o => o.id !== id);
-        return fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': apiKey
-          },
-          body: JSON.stringify(newOrders)
-        });
-      });
-    }
-  </script>
+</script>
 </body>
 </html>
