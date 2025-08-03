@@ -102,14 +102,14 @@
 <div id="orderId"></div>
 <div id="orderStatus"></div>
 
-<div id="loginPanel" style="display:none">
+<div id="loginPanel" style="display:none; padding: 20px; background: #f8b400; color: #333;">
   <h2>Operator login</h2>
-  <input type="text" id="username" placeholder="Gebruikersnaam" />
-  <input type="password" id="password" placeholder="Wachtwoord" />
+  <input type="text" id="username" placeholder="Gebruikersnaam" /><br /><br />
+  <input type="password" id="password" placeholder="Wachtwoord" /><br /><br />
   <button id="loginBtn">Log in</button>
 </div>
 
-<div id="operatorPanel" style="display:none">
+<div id="operatorPanel" style="display:none; padding: 20px;">
   <h2>Bestellingen (live)</h2>
   <div id="orders"></div>
 </div>
@@ -170,7 +170,6 @@ function placeOrder() {
     status: 'Nieuw'
   };
 
-  // Fetch current orders first
   fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
     headers: { 'X-Master-Key': apiKey }
   })
@@ -182,10 +181,15 @@ function placeOrder() {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-Master-Key': apiKey
+        'X-Master-Key': apiKey,
+        'X-Bin-Versioning': 'false'
       },
-      body: JSON.stringify(orders)
+      body: JSON.stringify({ record: orders })
     });
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('PUT request failed');
+    return res.json();
   })
   .then(() => {
     currentOrderId = order.id;
@@ -201,7 +205,7 @@ function placeOrder() {
 }
 
 function startPolling() {
-  fetchOrders(); // fetch direct
+  fetchOrders();
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(fetchOrders, 2000);
 }
@@ -246,13 +250,22 @@ function updateStatus(id, status) {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-Master-Key': apiKey
+        'X-Master-Key': apiKey,
+        'X-Bin-Versioning': 'false'
       },
-      body: JSON.stringify(orders)
+      body: JSON.stringify({ record: orders })
     });
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('PUT request failed');
+    return res.json();
   })
   .then(() => {
     fetchOrders();
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Fout bij status update.');
   });
 }
 
@@ -268,13 +281,22 @@ function deleteOrder(id) {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-Master-Key': apiKey
+        'X-Master-Key': apiKey,
+        'X-Bin-Versioning': 'false'
       },
-      body: JSON.stringify(orders)
+      body: JSON.stringify({ record: orders })
     });
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('PUT request failed');
+    return res.json();
   })
   .then(() => {
     fetchOrders();
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Fout bij verwijderen bestelling.');
   });
 }
 
@@ -298,7 +320,6 @@ function startPollingOrderStatus() {
     });
   }, 2000);
 }
-
 </script>
 </body>
 </html>
