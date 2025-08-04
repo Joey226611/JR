@@ -5,505 +5,601 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Joey's Restaurant - Bestelsysteem</title>
 <style>
-  /* Basic Reset & Fonts */
-  * { box-sizing: border-box; }
+  /* --- Algemeen --- */
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin:0; background:#fff8f0; color:#3c3c3c;
+    margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#fff8e1; color:#333;
+    display:flex; flex-direction: column; min-height: 100vh;
   }
-  header {
-    background:#d80000; color:white; padding:10px 20px; font-size: 24px; font-weight: bold;
-    display:flex; align-items:center; cursor:pointer;
+  #header {
+    background:#d80000; color:#fff; padding: 12px 20px; font-weight: 900; font-size: 24px;
+    cursor:pointer;
+    user-select:none;
   }
-  header img {
-    height: 32px; margin-right:10px;
+  #header:hover {
+    background:#b30000;
   }
+
   main {
-    padding: 15px;
+    flex:1; display:flex; flex-direction: column; padding: 10px 20px;
   }
-  /* Tabs */
+
+  /* --- Tabs Klant --- */
   #tabsContainer {
-    display:flex; gap: 10px; margin-bottom:15px; flex-wrap: wrap;
+    display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;
   }
   #tabsContainer span {
-    background:#fcd34d; color:#81191e; font-weight:700;
-    padding: 8px 15px; border-radius: 20px; cursor:pointer;
+    cursor:pointer;
+    padding: 8px 16px;
+    background: #f9c74f;
+    border-radius: 30px;
+    font-weight: 700;
+    color:#5b3a00;
     user-select:none;
-    transition: background 0.3s ease;
+    transition: background 0.3s;
   }
   #tabsContainer span.active, #tabsContainer span:hover {
-    background:#b22222; color:white;
+    background:#f9844a; color:#fff;
   }
-  /* Products Grid */
+
+  /* --- Producten Klant --- */
   #productsContainer {
-    display:grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
     gap: 15px;
   }
   .productCard {
-    background:white; border-radius: 8px; padding: 12px; box-shadow: 0 2px 6px rgb(216 68 68 / 0.3);
-    display:flex; flex-direction: column; align-items:center;
-    cursor:pointer; user-select:none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    padding: 10px;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    user-select:none;
+    transition: transform 0.15s;
   }
-  .productCard:hover:not(.disabled) {
+  .productCard:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 12px rgb(216 68 68 / 0.6);
   }
   .productCard.disabled {
-    opacity: 0.4; cursor: not-allowed;
-    pointer-events:none;
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   .productCard img {
-    max-width: 100%; max-height: 100px; margin-bottom:8px; border-radius:6px;
+    max-width: 100%; max-height: 100px; object-fit: contain; margin-bottom: 8px;
   }
   .productCard strong {
-    font-size: 1.1rem; margin-bottom: 4px;
+    font-size: 16px; margin-bottom: 4px; color: #333;
   }
-  /* Cart Button */
+  .productCard span {
+    font-weight: 700; color: #d80000;
+  }
+
+  /* --- Winkelwagen --- */
   #cartBtn {
     position: fixed; bottom: 20px; right: 20px;
-    background:#d80000; color:white; border:none;
-    padding: 14px 22px; border-radius: 28px; font-size: 18px;
-    box-shadow: 0 4px 12px rgb(216 68 68 / 0.6);
-    cursor:pointer; user-select:none;
-    z-index: 1000;
-    transition: background 0.3s ease;
-  }
-  #cartBtn:hover {
-    background:#a40000;
-  }
-  /* Cart Overlay */
-  #cartOverlay {
+    background: #d80000; color: white; border:none; border-radius: 50px;
+    padding: 12px 20px; font-size: 18px; font-weight: 900;
+    cursor:pointer;
+    box-shadow: 0 4px 15px rgb(216 0 0 / 0.7);
     display:none;
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    user-select:none;
+    z-index: 1000;
+  }
+
+  #cartOverlay {
+    display: none;
+    position: fixed; inset: 0;
     background: rgba(0,0,0,0.6);
+    justify-content: center; align-items: center;
     z-index: 2000;
-    justify-content:center; align-items:center;
   }
   #cartContent {
-    background: white; border-radius: 12px;
-    width: 320px; max-width: 90vw; max-height: 80vh;
-    display:flex; flex-direction: column;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column;
   }
-  #cartContent header {
-    padding: 15px; font-size: 20px; font-weight: 700; border-bottom: 1px solid #eee;
-    display: flex; justify-content: space-between; align-items:center;
-  }
-  #closeCartBtn {
-    background: transparent; border:none; font-size: 24px; cursor:pointer; color:#d80000;
-  }
-  #cartList {
-    flex-grow: 1; overflow-y: auto; padding: 15px;
+  #cartContent h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #d80000;
+    font-weight: 900;
   }
   .cartItem {
-    display:flex; justify-content: space-between; align-items:center;
-    margin-bottom: 12px; font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
   }
-  .cartQty {
-    margin-right: 6px; background:#d80000; color:white; border-radius: 14px; padding: 2px 8px;
-    font-size: 14px;
+  .cartItem span.qty {
+    font-weight: 900; margin-right: 10px;
   }
   .cartItem button {
-    background:#d80000; border:none; border-radius: 5px;
-    color:white; cursor:pointer; font-weight: 700; font-size: 16px;
-    padding: 0 6px;
-  }
-  #orderNoteLabel {
-    margin: 10px 15px 5px;
-    font-weight: 700;
+    background: #d80000; color: white; border: none; border-radius: 6px;
+    padding: 3px 8px; cursor: pointer; font-weight: 900;
   }
   #orderNote {
-    margin: 0 15px 10px;
-    width: calc(100% - 30px);
+    width: 100%;
+    margin-top: 10px;
     min-height: 60px;
-    padding: 8px;
-    font-size: 16px;
+    border: 2px solid #d80000;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    padding: 8px;
+    font-size: 14px;
     resize: vertical;
   }
   #placeOrderBtn {
-    background:#d80000; border:none; color:white; font-size: 18px;
-    padding: 14px; border-radius: 30px;
-    margin: 0 15px 15px;
-    cursor:pointer;
+    margin-top: 12px;
+    background: #d80000;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 0;
+    font-weight: 900;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  #closeCartBtn {
+    margin-top: 8px;
+    background: #555;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 0;
     font-weight: 700;
-    box-shadow: 0 4px 10px rgb(216 68 68 / 0.8);
-    transition: background 0.3s ease;
+    font-size: 16px;
+    cursor: pointer;
   }
-  #placeOrderBtn:hover {
-    background:#a40000;
-  }
-  /* Login Screen */
+
+  /* --- Login scherm --- */
   #loginScreen {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
+    display:none;
+    position: fixed; inset:0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center; align-items: center;
     z-index: 3000;
   }
   #loginBox {
     background: white;
-    padding: 30px 35px;
-    border-radius: 14px;
+    padding: 30px 40px;
+    border-radius: 20px;
     width: 320px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.3);
-    display:flex; flex-direction: column; gap: 18px;
+    max-width: 90vw;
+    box-shadow: 0 0 30px rgba(0,0,0,0.25);
   }
   #loginBox h2 {
-    margin: 0 0 10px;
-    font-weight: 700;
+    margin-top: 0; margin-bottom: 20px;
     color: #d80000;
+    font-weight: 900;
     text-align: center;
   }
   #loginBox label {
-    font-weight: 600;
-    font-size: 14px;
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
   }
   #loginBox input, #loginBox select {
     width: 100%;
     padding: 8px 10px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    border: 2px solid #d80000;
     font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    box-sizing: border-box;
   }
   #loginBtn {
+    width: 100%;
+    padding: 12px;
     background: #d80000;
     border: none;
-    padding: 12px;
-    font-weight: 700;
-    font-size: 18px;
+    border-radius: 50px;
+    font-weight: 900;
     color: white;
-    border-radius: 25px;
+    font-size: 18px;
     cursor: pointer;
-    transition: background 0.3s ease;
   }
   #loginBtn:hover {
-    background: #a40000;
+    background: #b30000;
   }
-  /* Operator Screen */
+
+  /* --- Operator scherm --- */
   #operatorScreen {
-    display: none;
-    padding: 15px;
-    font-size: 14px;
-    color: #333;
+    display:none;
+    flex:1; padding: 10px 20px;
+    background:#fff4e1;
   }
-  #ordersContainer {
-    display: flex;
-    gap: 20px;
+  #operatorContent {
+    display: flex; gap: 20px; height: 100%;
   }
-  #inProgressOrders, #readyOrders {
-    flex: 1;
-    background: #fef5f5;
+  #ordersList, #orderDetailContainer, #productManagement {
+    background: white;
     border-radius: 12px;
-    padding: 12px;
-    height: 70vh;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.15);
+    padding: 15px;
     overflow-y: auto;
-    box-shadow: 0 0 10px rgba(216, 68, 68, 0.15);
   }
-  #inProgressOrders h3, #readyOrders h3 {
-    margin-top: 0;
-    color: #d80000;
+  #ordersList {
+    flex: 1;
+    max-width: 300px;
+  }
+  #ordersList h3 {
+    margin-top: 0; color: #d80000; font-weight: 900; text-align:center;
   }
   .orderItem {
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    border-radius: 8px;
+    padding: 10px 8px;
+    border-bottom: 1px solid #ddd;
     cursor: pointer;
-    background: #fee5e5;
-    transition: background 0.2s ease;
-    font-weight: 700;
-  }
-  .orderItem:hover {
-    background: #d44e4e;
-    color: white;
+    user-select:none;
   }
   .orderItem.ready {
-    background: #d6efd6;
-    color: #2d662d;
+    background: #d0f0d6;
+    color: #2d652d;
+    font-weight: 900;
   }
   .orderItem.delayed {
-    background: #fff3cd;
-    color: #856404;
+    background: #f7e3e3;
+    color: #a32b2b;
+    font-weight: 900;
   }
-  /* Order Details Box */
-  #orderDetails {
-    display: none;
-    margin-top: 20px;
-    background: #fff4f4;
+  .orderItem:hover {
+    background: #fce2e2;
+  }
+
+  #orderDetailContainer {
+    flex: 2;
+    display: flex; flex-direction: column;
+  }
+  #orderDetailContainer h3 {
+    margin-top: 0; color: #d80000; font-weight: 900; text-align:center;
+  }
+  #orderDetailsContent {
+    flex: 1;
+    overflow-y: auto;
+    border: 2px solid #d80000;
     border-radius: 12px;
     padding: 15px;
-    box-shadow: 0 0 10px rgb(216 68 68 / 0.3);
+    background: #fff;
+    margin-bottom: 15px;
   }
-  #orderDetails p {
+  #orderDetailsContent p {
     margin: 6px 0;
   }
-  #orderDetails ul {
+  #orderDetailsContent ul {
     margin: 6px 0 15px 20px;
+  }
+  #orderDetailsContent ul li {
+    margin-bottom: 5px;
+  }
+
+  #orderActions {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
   }
   #orderStatusSelect, #orderNoteInput {
     width: 100%;
-    padding: 8px 10px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    border-radius: 12px;
+    border: 2px solid #d80000;
+    padding: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    font-weight: 700;
+  }
+  #orderNoteInput {
+    min-height: 70px;
+    resize: vertical;
+    margin-top: 8px;
   }
   #saveOrderBtn, #deleteOrderBtn, #closeOrderDetailsBtn {
+    flex: 1;
     background: #d80000;
-    color: white;
     border: none;
-    padding: 10px 16px;
-    margin-right: 10px;
-    border-radius: 25px;
-    font-weight: 700;
+    border-radius: 50px;
+    color: white;
+    font-weight: 900;
+    font-size: 18px;
+    padding: 10px 0;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s;
   }
   #saveOrderBtn:hover, #deleteOrderBtn:hover, #closeOrderDetailsBtn:hover {
-    background: #a40000;
+    background: #b30000;
   }
-  /* Product Management */
+
+  /* --- Product beheer operator --- */
   #productManagement {
-    margin-top: 30px;
+    flex: 1.5;
+    display: flex; flex-direction: column;
+  }
+  #productManagement h3 {
+    margin-top: 0; color: #d80000; font-weight: 900; text-align:center;
   }
   #tabsList {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 12px;
   }
   #tabsList div {
-    background: #d80000;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 8px 15px;
+    background: #f9c74f;
+    border-radius: 30px;
     cursor: pointer;
-    font-weight: 700;
     user-select:none;
+    font-weight: 700;
+    color:#5b3a00;
+    transition: background 0.3s;
   }
-  #tabsList div.active {
-    background: #a40000;
+  #tabsList div.active, #tabsList div:hover {
+    background:#f9844a; color:#fff;
   }
+
   #productList {
-    max-height: 180px;
+    flex: 1;
     overflow-y: auto;
-    border: 1px solid #d80000;
-    border-radius: 8px;
-    padding: 6px 10px;
-    background: #fff4f4;
+    border: 2px solid #d80000;
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px;
     margin-bottom: 10px;
   }
   #productList div {
-    padding: 6px 6px;
-    border-bottom: 1px solid #d80000;
-    cursor: pointer;
-  }
-  #productList div:hover {
-    background: #d44e4e;
-    color: white;
-  }
-  #productForm {
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  #productForm input, #productForm select {
     padding: 8px 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    cursor: pointer;
+    user-select:none;
+    border-bottom: 1px solid #ddd;
+  }
+  #productList div:hover, #productList div.active {
+    background: #f9844a;
+    color: white;
+    font-weight: 900;
+  }
+
+  #productForm {
+    display: flex; flex-direction: column; gap: 8px;
   }
   #productForm label {
     font-weight: 700;
   }
-  #saveProductBtn, #resetProductBtn, #addTabBtn {
+  #productForm input, #productForm select {
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 2px solid #d80000;
+    font-size: 16px;
+  }
+  #productFormButtons {
+    display: flex; gap: 10px; margin-top: 10px;
+  }
+  #productFormButtons button {
+    flex: 1;
     background: #d80000;
     color: white;
     border: none;
-    padding: 10px 16px;
-    border-radius: 25px;
-    font-weight: 700;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 16px;
+    padding: 10px 0;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s;
   }
-  #saveProductBtn:hover, #resetProductBtn:hover, #addTabBtn:hover {
-    background: #a40000;
+  #productFormButtons button:hover {
+    background: #b30000;
+  }
+
+  #addTabContainer {
+    margin-top: 10px;
+    display: flex; gap: 10px; justify-content: center;
   }
   #addTabInput {
-    padding: 8px 10px;
+    flex: 1;
+    padding: 10px;
     font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
+    border-radius: 50px;
+    border: 2px solid #d80000;
   }
-  /* Display Screen */
+  #addTabBtn {
+    background: #d80000;
+    border: none;
+    color: white;
+    font-weight: 900;
+    font-size: 16px;
+    border-radius: 50px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  #addTabBtn:hover {
+    background: #b30000;
+  }
+
+  /* --- Display scherm --- */
   #displayScreen {
-    display: none;
-    padding: 15px;
+    display:none;
+    padding: 20px;
+    background: #fff8e1;
+    height: 100vh;
+    box-sizing: border-box;
   }
   #displayLists {
-    display: flex; justify-content: space-between; gap: 30px;
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
   #inProgressList, #readyList {
-    flex: 1;
-    border-radius: 12px;
-    padding: 15px;
-    height: 80vh;
-    overflow-y: auto;
-    font-weight: 700;
-    font-size: 2rem;
-    text-align: center;
-    user-select:none;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 15px rgb(0 0 0 / 0.15);
+    padding: 15px 25px;
+    min-width: 280px;
+    max-width: 320px;
+    min-height: 300px;
+    font-weight: 900;
+    font-size: 42px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    align-content: flex-start;
+    color: #5b3a00;
   }
   #inProgressList {
-    background: #d7b28a;
-    color: #6b3e0f;
-    display: flex; flex-wrap: wrap; gap: 25px; align-content: flex-start; justify-content: center;
+    background: #f7f1e7;
+    color: #7a5a00;
   }
   #readyList {
-    background: #b7d6b7;
-    color: #2d662d;
-    display: flex; flex-wrap: wrap; gap: 25px; align-content: flex-start; justify-content: center;
+    background: #d0f0d6;
+    color: #2d652d;
   }
-  #inProgressList div, #readyList div {
-    background: #f7f7f7;
-    border-radius: 20px;
-    padding: 15px 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  #inProgressList > div, #readyList > div {
+    background: #f9844a;
+    border-radius: 12px;
+    padding: 15px 20px;
+    min-width: 50px;
+    text-align: center;
     cursor: default;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
     user-select:none;
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 700px) {
+    #productsContainer {
+      grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
+    }
+    #operatorContent {
+      flex-direction: column;
+    }
+    #ordersList, #orderDetailContainer, #productManagement {
+      max-height: 300px;
+    }
+    #displayLists {
+      flex-direction: column; gap: 20px;
+      align-items: center;
+    }
   }
 </style>
 </head>
 <body>
 
-<header id="header">
-  <img src="RLogo.jpg" alt="Logo" />
-  Joey's Restaurant
-</header>
+<div id="header" title="Klik om uit te loggen (alleen als ingelogd)">Joey's Restaurant</div>
 
-<main>
-  <div id="tabsContainer"></div>
-  <div id="productsContainer"></div>
-</main>
+<main id="mainContent">
 
-<button id="cartBtn" aria-label="Open winkelwagen">🛒 Winkelwagen (0)</button>
+  <!-- Klant Bestelmenu -->
+  <section id="customerUI">
+    <div id="tabsContainer"></div>
+    <div id="productsContainer"></div>
+    <button id="cartBtn" title="Winkelwagen">🛒</button>
+  </section>
 
-<!-- Winkelwagen Overlay -->
-<div id="cartOverlay" aria-modal="true" role="dialog" aria-labelledby="cartTitle" tabindex="-1">
-  <div id="cartContent">
-    <header>
-      <span id="cartTitle">Winkelwagen</span>
-      <button id="closeCartBtn" aria-label="Sluit winkelwagen">&times;</button>
-    </header>
-    <div id="cartList"></div>
-    <label for="orderNote" id="orderNoteLabel">Opmerking bij bestelling (optioneel)</label>
-    <textarea id="orderNote" placeholder="Bijvoorbeeld: Geen ui, extra saus..."></textarea>
-    <button id="placeOrderBtn">Bestelling plaatsen</button>
-  </div>
-</div>
-
-<!-- Login Screen -->
-<div id="loginScreen" aria-modal="true" role="dialog" tabindex="-1">
-  <div id="loginBox">
-    <h2>Inloggen</h2>
-    <label for="loginTypeSelect">Account type:</label>
-    <select id="loginTypeSelect">
-      <option value="operator">Operator</option>
-      <option value="display">Display</option>
-    </select>
-    <label for="loginUsername">Gebruikersnaam:</label>
-    <input type="text" id="loginUsername" autocomplete="username" />
-    <label for="loginPassword">Wachtwoord:</label>
-    <input type="password" id="loginPassword" autocomplete="current-password" />
-    <button id="loginBtn">Inloggen</button>
-  </div>
-</div>
-
-<!-- Operator Screen -->
-<div id="operatorScreen">
-  <h2>Operator Panel</h2>
-  <div id="ordersContainer">
-    <div id="inProgressOrders"></div>
-    <div id="readyOrders"></div>
-  </div>
-
-  <div id="orderDetails">
-    <h3>Bestelling Details</h3>
-    <div id="orderInfo"></div>
-    <label for="orderStatusSelect">Status wijzigen:</label>
-    <select id="orderStatusSelect">
-      <option value="In behandeling">In behandeling</option>
-      <option value="Klaar">Klaar</option>
-      <option value="Kan (Tijdstip) langer duren">Kan (Tijdstip) langer duren</option>
-    </select>
-    <label for="orderNoteInput">Opmerking toevoegen:</label>
-    <textarea id="orderNoteInput" placeholder="Opmerking operator (optioneel)"></textarea>
-    <div>
-      <button id="saveOrderBtn">Opslaan</button>
-      <button id="deleteOrderBtn">Verwijderen</button>
-      <button id="closeOrderDetailsBtn">Sluiten</button>
+  <!-- Winkelwagen Overlay -->
+  <div id="cartOverlay">
+    <div id="cartContent">
+      <h3>Winkelwagen</h3>
+      <div id="cartItems"></div>
+      <label for="orderNote">Opmerkingen (bijv. allergieën):</label>
+      <textarea id="orderNote" placeholder="Typ hier extra opmerkingen..."></textarea>
+      <button id="placeOrderBtn">Bestelling plaatsen</button>
+      <button id="closeCartBtn">Sluiten</button>
     </div>
   </div>
 
-  <hr />
-
-  <h2>Product & Tab beheer</h2>
-  <input type="text" id="addTabInput" placeholder="Nieuwe tab naam" />
-  <button id="addTabBtn">Tab toevoegen</button>
-  <div id="tabsList"></div>
-  <div id="productList"></div>
-  <form id="productForm" onsubmit="return false;">
-    <label for="productNameInput">Naam:</label>
-    <input type="text" id="productNameInput" />
-    <label for="productPriceInput">Prijs (€):</label>
-    <input type="number" id="productPriceInput" min="0" step="0.01" />
-    <label for="productPhotoInput">Foto URL:</label>
-    <input type="text" id="productPhotoInput" />
-    <label for="productAvailabilitySelect">Beschikbaar:</label>
-    <select id="productAvailabilitySelect">
-      <option value="true">Op voorraad</option>
-      <option value="false">Uitverkocht</option>
-    </select>
-    <button id="saveProductBtn">Opslaan product</button>
-    <button id="resetProductBtn">Reset formulier</button>
-  </form>
-</div>
-
-<!-- Display Screen -->
-<div id="displayScreen">
-  <h2>Bestellingen Display</h2>
-  <div id="displayLists">
-    <div id="inProgressList" aria-label="Bestellingen in behandeling"></div>
-    <div id="readyList" aria-label="Bestellingen klaar"></div>
+  <!-- Login scherm -->
+  <div id="loginScreen">
+    <div id="loginBox">
+      <h2>Login</h2>
+      <label for="loginTypeSelect">Login type</label>
+      <select id="loginTypeSelect">
+        <option value="operator">Operator</option>
+        <option value="display">Display scherm</option>
+      </select>
+      <label for="loginUsername">Gebruikersnaam</label>
+      <input type="text" id="loginUsername" autocomplete="off" />
+      <label for="loginPassword">Wachtwoord</label>
+      <input type="password" id="loginPassword" autocomplete="off" />
+      <button id="loginBtn">Inloggen</button>
+    </div>
   </div>
-  <audio id="doneSound" src="JR/Sounds/DoneSoundForScreen.mp3" preload="auto"></audio>
-</div>
+
+  <!-- Operator scherm -->
+  <section id="operatorScreen">
+    <div id="operatorContent">
+      <div id="ordersList">
+        <h3>Bestellingen</h3>
+        <div id="inProgressOrders"></div>
+        <div id="readyOrders" style="margin-top: 20px;"></div>
+      </div>
+      <div id="orderDetailContainer">
+        <h3>Bestelling details</h3>
+        <div id="orderDetailsContent"></div>
+        <select id="orderStatusSelect">
+          <option value="In behandeling">In behandeling</option>
+          <option value="Klaar">Klaar</option>
+          <option value="Kan langer duren">Kan langer duren</option>
+        </select>
+        <textarea id="orderNoteInput" placeholder="Voeg een opmerking toe..."></textarea>
+        <div id="orderActions">
+          <button id="saveOrderBtn">Opslaan</button>
+          <button id="deleteOrderBtn">Verwijderen</button>
+          <button id="closeOrderDetailsBtn">Sluiten</button>
+        </div>
+      </div>
+      <div id="productManagement">
+        <h3>Productbeheer</h3>
+        <div id="tabsList"></div>
+        <div id="productList"></div>
+        <form id="productForm" onsubmit="return false;">
+          <label for="productNameInput">Naam</label>
+          <input type="text" id="productNameInput" autocomplete="off" />
+          <label for="productPriceInput">Prijs (€)</label>
+          <input type="number" id="productPriceInput" min="0" step="0.01" />
+          <label for="productPhotoInput">Foto URL</label>
+          <input type="url" id="productPhotoInput" autocomplete="off" />
+          <label for="productAvailabilitySelect">Beschikbaar</label>
+          <select id="productAvailabilitySelect">
+            <option value="true">Op voorraad</option>
+            <option value="false">Uitverkocht</option>
+          </select>
+          <div id="productFormButtons">
+            <button id="saveProductBtn">Opslaan</button>
+            <button id="resetProductBtn" type="button">Reset</button>
+          </div>
+        </form>
+        <div id="addTabContainer">
+          <input type="text" id="addTabInput" placeholder="Nieuwe tab naam" autocomplete="off" />
+          <button id="addTabBtn">Tab toevoegen</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Display scherm -->
+  <section id="displayScreen">
+    <h2 style="text-align:center; color:#d80000; font-weight:900; margin-bottom:30px;">Display Scherm</h2>
+    <div id="displayLists">
+      <div id="inProgressList" aria-label="In behandeling"></div>
+      <div id="readyList" aria-label="Klaar"></div>
+    </div>
+    <audio id="doneSound" src="JR/Sounds/DoneSoundForScreen.mp3" preload="auto"></audio>
+  </section>
+
+</main>
 
 <script>
-  // Config & API keys
-  const orderBinId = '688f6efe7b4b8670d8ac3f46';
+(() => {
+  // --- Config JSONBin ---
+  const orderBinId = '688f6efe7b4b8670d8ac3f46'; // jouw bestelling bin id
   const orderApiKey = '$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O';
-  const productBinId = '689091d47b4b8670d8acd414';
+
+  const productBinId = '689091d47b4b8670d8acd414'; // product bin id
   const productApiKey = '$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O';
 
-  // State
-  let currentUser = 'Customer'; // 'Customer' | 'Operator' | 'Display'
-  let ordersCache = [];
-  let allProductsData = {};
-  let activeTab = null;
-  let cart = {};
-  let selectedOrderId = null;
-  let activeManageTab = null;
-  let editingProductIndex = null;
-
-  // Elements
+  // --- Elementen ---
   const header = document.getElementById('header');
+
+  const customerUI = document.getElementById('customerUI');
   const tabsContainer = document.getElementById('tabsContainer');
   const productsContainer = document.getElementById('productsContainer');
   const cartBtn = document.getElementById('cartBtn');
   const cartOverlay = document.getElementById('cartOverlay');
-  const cartList = document.getElementById('cartList');
+  const cartItems = document.getElementById('cartItems');
   const orderNote = document.getElementById('orderNote');
   const placeOrderBtn = document.getElementById('placeOrderBtn');
   const closeCartBtn = document.getElementById('closeCartBtn');
@@ -517,16 +613,13 @@
   const operatorScreen = document.getElementById('operatorScreen');
   const inProgressOrders = document.getElementById('inProgressOrders');
   const readyOrders = document.getElementById('readyOrders');
-  const orderDetails = document.getElementById('orderDetails');
-  const orderInfo = document.getElementById('orderInfo');
+  const orderDetailsContent = document.getElementById('orderDetailsContent');
   const orderStatusSelect = document.getElementById('orderStatusSelect');
   const orderNoteInput = document.getElementById('orderNoteInput');
   const saveOrderBtn = document.getElementById('saveOrderBtn');
   const deleteOrderBtn = document.getElementById('deleteOrderBtn');
   const closeOrderDetailsBtn = document.getElementById('closeOrderDetailsBtn');
 
-  const addTabInput = document.getElementById('addTabInput');
-  const addTabBtn = document.getElementById('addTabBtn');
   const tabsList = document.getElementById('tabsList');
   const productList = document.getElementById('productList');
   const productNameInput = document.getElementById('productNameInput');
@@ -535,547 +628,439 @@
   const productAvailabilitySelect = document.getElementById('productAvailabilitySelect');
   const saveProductBtn = document.getElementById('saveProductBtn');
   const resetProductBtn = document.getElementById('resetProductBtn');
+  const addTabInput = document.getElementById('addTabInput');
+  const addTabBtn = document.getElementById('addTabBtn');
 
   const displayScreen = document.getElementById('displayScreen');
   const inProgressList = document.getElementById('inProgressList');
   const readyList = document.getElementById('readyList');
   const doneSound = document.getElementById('doneSound');
 
-  // Helpers
-  function saveUserType(type) {
-    localStorage.setItem('userType', type);
-    currentUser = type;
-  }
-  function loadUserType() {
-    const t = localStorage.getItem('userType');
-    if(t) currentUser = t;
+  // --- State ---
+  let currentUser = 'Customer'; // 'Customer', 'Operator', 'Display'
+  let ordersCache = [];
+  let allProductsData = {};
+  let cart = {};
+  let activeTab = null;
+
+  let selectedOrderId = null;
+  let editingProductIndex = null;
+  let activeManageTab = null;
+
+  // --- Helpers JSONBin ---
+
+  async function getLatestRecord(binId, apiKey) {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+      headers: { 'X-Master-Key': apiKey }
+    });
+    if(!res.ok) throw new Error('Kan data niet ophalen');
+    const data = await res.json();
+    return data.record;
   }
 
-  // Render klant menu tabs
-  function renderTabs() {
-    tabsContainer.innerHTML = '';
-    if(!allProductsData) return;
-    const tabKeys = Object.keys(allProductsData);
-    if(tabKeys.length === 0) {
-      tabsContainer.innerHTML = '<p>Geen tabs beschikbaar</p>';
-      return;
+  async function updateRecord(binId, apiKey, newRecord) {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      method: 'PUT',
+      headers: {
+        'X-Master-Key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newRecord)
+    });
+    if(!res.ok) throw new Error('Kan data niet opslaan');
+  }
+
+  // --- Laden en tonen producten en tabs ---
+  async function loadProductsData() {
+    try {
+      const data = await getLatestRecord(productBinId, productApiKey);
+      if(!data.tabs) data.tabs = {};
+      allProductsData = data.tabs;
+      renderTabsCustomer();
+      if(!activeTab) {
+        activeTab = Object.keys(allProductsData)[0] || null;
+      }
+      renderProductsCustomer();
+      renderTabsManagement();
+      renderProductsManagement();
+    } catch(err) {
+      alert('Fout bij laden producten: ' + err.message);
     }
-    tabKeys.forEach(tab => {
+  }
+
+  function renderTabsCustomer() {
+    tabsContainer.innerHTML = '';
+    Object.keys(allProductsData).forEach(tab => {
       const span = document.createElement('span');
       span.textContent = tab;
-      if(tab === activeTab) span.classList.add('active');
+      span.classList.toggle('active', tab === activeTab);
       span.onclick = () => {
         activeTab = tab;
-        renderTabs();
-        renderProducts();
+        renderTabsCustomer();
+        renderProductsCustomer();
       };
       tabsContainer.appendChild(span);
     });
-    if(!activeTab) {
-      activeTab = tabKeys[0];
-      renderTabs();
-      renderProducts();
-    }
   }
-
-  // Render producten klant view
-  function renderProducts() {
+  function renderProductsCustomer() {
     productsContainer.innerHTML = '';
     if(!activeTab || !allProductsData[activeTab]) return;
-    allProductsData[activeTab].forEach((prod, idx) => {
+    allProductsData[activeTab].forEach((product, i) => {
       const card = document.createElement('div');
-      card.className = 'productCard';
-      if(!prod.beschikbaar) card.classList.add('disabled');
-      card.tabIndex = 0;
-      // Img
-      if(prod.foto) {
+      card.className = 'productCard' + (product.beschikbaar ? '' : ' disabled');
+      card.onclick = () => {
+        if(!product.beschikbaar) return;
+        addToCart(i);
+      };
+      if(product.foto) {
         const img = document.createElement('img');
-        img.src = prod.foto;
-        img.alt = prod.naam;
+        img.src = product.foto;
+        img.alt = product.naam;
         card.appendChild(img);
       }
-      const nameEl = document.createElement('strong');
-      nameEl.textContent = prod.naam;
-      card.appendChild(nameEl);
-      const priceEl = document.createElement('span');
-      priceEl.textContent = `€${prod.prijs.toFixed(2)}`;
-      card.appendChild(priceEl);
-      card.onclick = () => {
-        if(!prod.beschikbaar) return;
-        addToCart(prod);
-      };
+      const strong = document.createElement('strong');
+      strong.textContent = product.naam;
+      card.appendChild(strong);
+      const price = document.createElement('span');
+      price.textContent = '€' + product.prijs.toFixed(2);
+      card.appendChild(price);
       productsContainer.appendChild(card);
     });
   }
 
-  // Add product to cart
-  function addToCart(product) {
-    if(!cart[product.naam]) cart[product.naam] = { ...product, qty: 0 };
-    cart[product.naam].qty++;
+  // --- Winkelwagen functies ---
+  function addToCart(productIndex) {
+    const product = allProductsData[activeTab][productIndex];
+    if(!cart[activeTab]) cart[activeTab] = {};
+    if(cart[activeTab][product.naam]) cart[activeTab][product.naam].qty++;
+    else cart[activeTab][product.naam] = { ...product, qty:1 };
     updateCartButton();
   }
 
-  // Update cart button text
   function updateCartButton() {
-    let count = 0;
-    for(let key in cart) count += cart[key].qty;
-    cartBtn.textContent = `🛒 Winkelwagen (${count})`;
-    if(count > 0) {
-      cartBtn.style.display = 'block';
-    } else {
-      cartBtn.style.display = 'none';
-    }
+    const totalCount = Object.values(cart).reduce((acc, tabProducts) => {
+      return acc + Object.values(tabProducts).reduce((a,b) => a + b.qty, 0);
+    }, 0);
+    cartBtn.style.display = totalCount > 0 ? 'block' : 'none';
+    cartBtn.textContent = `🛒 (${totalCount})`;
   }
 
-  // Show cart overlay
+  cartBtn.onclick = () => {
+    showCart();
+  };
+
   function showCart() {
-    renderCartList();
+    renderCartItems();
     cartOverlay.style.display = 'flex';
-    orderNote.focus();
   }
 
-  // Hide cart overlay
-  function hideCart() {
+  closeCartBtn.onclick = () => {
     cartOverlay.style.display = 'none';
+  };
+
+  function renderCartItems() {
+    cartItems.innerHTML = '';
+    Object.entries(cart).forEach(([tabName, products]) => {
+      Object.entries(products).forEach(([name, item]) => {
+        const div = document.createElement('div');
+        div.className = 'cartItem';
+        const qtySpan = document.createElement('span');
+        qtySpan.className = 'qty';
+        qtySpan.textContent = item.qty + 'x';
+        div.appendChild(qtySpan);
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        div.appendChild(nameSpan);
+        const priceSpan = document.createElement('span');
+        priceSpan.textContent = '€' + (item.prijs * item.qty).toFixed(2);
+        div.appendChild(priceSpan);
+        // knop om item uit winkelwagen te verwijderen
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'x';
+        delBtn.title = 'Verwijder';
+        delBtn.onclick = () => {
+          item.qty--;
+          if(item.qty <= 0) {
+            delete cart[tabName][name];
+            if(Object.keys(cart[tabName]).length === 0) {
+              delete cart[tabName];
+            }
+          }
+          updateCartButton();
+          renderCartItems();
+        };
+        div.appendChild(delBtn);
+        cartItems.appendChild(div);
+      });
+    });
   }
 
-  // Render cart list
-  function renderCartList() {
-    cartList.innerHTML = '';
-    for(let key in cart) {
-      const item = cart[key];
-      const div = document.createElement('div');
-      div.className = 'cartItem';
-      const qtySpan = document.createElement('span');
-      qtySpan.className = 'cartQty';
-      qtySpan.textContent = item.qty;
-      div.appendChild(qtySpan);
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = item.naam;
-      div.appendChild(nameSpan);
-      const rmBtn = document.createElement('button');
-      rmBtn.textContent = '×';
-      rmBtn.title = 'Verwijder item';
-      rmBtn.onclick = (e) => {
-        e.stopPropagation();
-        removeFromCart(item.naam);
-      };
-      div.appendChild(rmBtn);
-      cartList.appendChild(div);
-    }
-  }
-
-  // Remove product from cart
-  function removeFromCart(name) {
-    if(cart[name]) {
-      delete cart[name];
-      updateCartButton();
-      renderCartList();
-    }
-  }
-
-  // Place order handler
-  async function placeOrder() {
+  // --- Bestelling plaatsen ---
+  placeOrderBtn.onclick = async () => {
     if(Object.keys(cart).length === 0) {
-      alert('Je winkelwagen is leeg.');
+      alert('Je winkelwagen is leeg');
       return;
     }
-    const opmerkingKlant = orderNote.value.trim();
+    const noteText = orderNote.value.trim();
+
+    // Laad laatste data + counter
+    let data;
+    try {
+      data = await getLatestRecord(orderBinId, orderApiKey);
+    } catch(e) {
+      alert('Kan bestelling niet plaatsen, probeer opnieuw');
+      return;
+    }
+    if(!data.orders) data.orders = [];
+    if(typeof data.counter !== 'number') data.counter = 0;
+
+    // Nieuwe bestelling nummer
+    const newOrderNumber = data.counter + 1;
+
+    // Bouw order object
+    const newOrder = {
+      id: newOrderNumber,
+      items: cart,
+      note: noteText,
+      status: "In behandeling",
+      createdAt: new Date().toISOString()
+    };
+
+    // Voeg toe en update counter
+    data.orders.push(newOrder);
+    data.counter = newOrderNumber;
 
     try {
-      // Load existing orders to get latest id
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${orderBinId}/latest`, {
-        headers: { 'X-Master-Key': orderApiKey }
-      });
-      if(!res.ok) throw new Error('Fout bij ophalen bestellingen');
-      const data = await res.json();
-      const currentRecord = data.record || {};
-      let bestellingen = currentRecord.bestellingen || [];
-      let orderCounter = currentRecord.counter || 0;
-
-      // Maak nieuwe bestelling
-      orderCounter++;
-      const newOrder = {
-        id: orderCounter,
-        producten: Object.values(cart).map(p => ({
-          naam: p.naam,
-          prijs: p.prijs,
-          qty: p.qty
-        })),
-        status: 'In behandeling',
-        tijdstip: new Date().toISOString(),
-        opmerkingKlant: opmerkingKlant,
-        opmerkingOperator: ''
-      };
-      bestellingen.push(newOrder);
-
-      // Update bin met nieuwe bestelling en counter
-      currentRecord.bestellingen = bestellingen;
-      currentRecord.counter = orderCounter;
-
-      const putRes = await fetch(`https://api.jsonbin.io/v3/b/${orderBinId}`, {
-        method: 'PUT',
-        headers: {
-          'X-Master-Key': orderApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(currentRecord)
-      });
-      if(!putRes.ok) throw new Error('Fout bij opslaan bestelling');
-
-      // Reset cart
+      await updateRecord(orderBinId, orderApiKey, data);
+      alert(`Bestelling geplaatst! Jouw bestelnummer is #${newOrderNumber}`);
       cart = {};
       updateCartButton();
       orderNote.value = '';
+      cartOverlay.style.display = 'none';
 
-      // Toon keep-open scherm
-      showKeepOpenScreen(newOrder.id);
-
+      // Ga naar keep open scherm (alert ipv aparte pagina)
+      alert(`Hou deze pagina open tot jouw bestelling klaar is.\nBestelnummer: #${newOrderNumber}`);
     } catch(e) {
-      alert('Fout bij plaatsen bestelling: ' + e.message);
+      alert('Fout bij plaatsen bestelling, probeer opnieuw.');
     }
-  }
+  };
 
-  // Keep open scherm voor klant
-  function showKeepOpenScreen(orderId) {
-    main.style.display = 'none';
-    cartBtn.style.display = 'none';
-    tabsContainer.style.display = 'none';
-    productsContainer.style.display = 'none';
+  // --- Login functies ---
+  loginBtn.onclick = () => {
+    const type = loginTypeSelect.value;
+    const username = loginUsername.value.trim();
+    const password = loginPassword.value.trim();
 
-    // Maak scherm
-    const keepOpenDiv = document.createElement('div');
-    keepOpenDiv.id = 'keepOpenScreen';
-    keepOpenDiv.style.cssText = `
-      position: fixed; inset: 0; background: #d80000; color: white;
-      display:flex; flex-direction: column; justify-content: center; align-items: center;
-      font-size: 24px; font-weight: 700; text-align: center; z-index: 5000;
-    `;
-    keepOpenDiv.innerHTML = `
-      <p>Bestelling geplaatst! Je bestelnummer is:</p>
-      <p style="font-size: 48px; margin: 15px 0;">#${orderId}</p>
-      <p>Laat deze pagina open totdat je bestelling klaar is.</p>
-      <button id="keepOpenBackBtn" style="margin-top:30px; font-size:18px; background:white; color:#d80000; border:none; border-radius: 12px; padding: 12px 20px; cursor:pointer;">Terug naar menu</button>
-    `;
-    document.body.appendChild(keepOpenDiv);
-
-    document.getElementById('keepOpenBackBtn').onclick = () => {
-      keepOpenDiv.remove();
-      showCustomerUI();
-    };
-  }
-
-  // Show klant UI
-  function showCustomerUI() {
-    currentUser = 'Customer';
-    saveUserType(currentUser);
-
-    if(document.getElementById('keepOpenScreen')) {
-      document.getElementById('keepOpenScreen').remove();
+    if(type === 'operator') {
+      if(username.toLowerCase() === 'operator' && password === '8008') {
+        currentUser = 'Operator';
+        showOperatorUI();
+        hideLoginScreen();
+      } else {
+        alert('Ongeldige operator login');
+      }
+    } else if(type === 'display') {
+      if(username.toLowerCase() === 'operatorscreen' && password === '8008') {
+        currentUser = 'Display';
+        showDisplayUI();
+        hideLoginScreen();
+      } else {
+        alert('Ongeldige display login');
+      }
     }
-    main.style.display = 'block';
-    cartBtn.style.display = Object.keys(cart).length > 0 ? 'block' : 'none';
-    tabsContainer.style.display = 'flex';
-    productsContainer.style.display = 'grid';
+  };
 
+  function showLoginScreen() {
+    customerUI.style.display = 'none';
     operatorScreen.style.display = 'none';
     displayScreen.style.display = 'none';
-    loginScreen.style.display = 'none';
-  }
-
-  // Login screen functies
-  function showLoginScreen() {
     loginScreen.style.display = 'flex';
     loginUsername.value = '';
     loginPassword.value = '';
-    loginTypeSelect.value = 'operator';
-    loginUsername.focus();
   }
   function hideLoginScreen() {
     loginScreen.style.display = 'none';
   }
 
-  // Login afhandelen
-  function handleLogin() {
-    const type = loginTypeSelect.value;
-    const user = loginUsername.value.trim();
-    const pass = loginPassword.value;
-
-    if(type === 'operator') {
-      if(user === 'Operator' && pass === '8008') {
-        currentUser = 'Operator';
-        saveUserType(currentUser);
-        hideLoginScreen();
-        showOperatorUI();
-      } else {
-        alert('Onjuiste gebruikersnaam of wachtwoord');
-      }
-    } else if(type === 'display') {
-      if(user === 'OperatorScreen' && pass === '8008') {
-        currentUser = 'Display';
-        saveUserType(currentUser);
-        hideLoginScreen();
-        showDisplayUI();
-      } else {
-        alert('Onjuiste gebruikersnaam of wachtwoord');
-      }
-    }
-  }
-
-  // Operator UI tonen
-  function showOperatorUI() {
-    main.style.display = 'none';
-    cartBtn.style.display = 'none';
-    tabsContainer.style.display = 'none';
-    productsContainer.style.display = 'none';
-    operatorScreen.style.display = 'block';
+  // --- UI tonen ---
+  function showCustomerUI() {
+    currentUser = 'Customer';
+    loginScreen.style.display = 'none';
+    operatorScreen.style.display = 'none';
     displayScreen.style.display = 'none';
-
-    selectedOrderId = null;
-    orderDetails.style.display = 'none';
-
+    customerUI.style.display = 'block';
+  }
+  function showOperatorUI() {
+    currentUser = 'Operator';
+    loginScreen.style.display = 'none';
+    customerUI.style.display = 'none';
+    displayScreen.style.display = 'none';
+    operatorScreen.style.display = 'flex';
     loadOrders();
     loadProductsData();
   }
-
-  // Display UI tonen
   function showDisplayUI() {
-    main.style.display = 'none';
-    cartBtn.style.display = 'none';
-    tabsContainer.style.display = 'none';
-    productsContainer.style.display = 'none';
+    currentUser = 'Display';
+    loginScreen.style.display = 'none';
+    customerUI.style.display = 'none';
     operatorScreen.style.display = 'none';
     displayScreen.style.display = 'block';
-
     loadOrders();
   }
 
-  // Laden van bestellingen
+  // --- Laden en tonen orders ---
   async function loadOrders() {
     try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${orderBinId}/latest`, {
-        headers: { 'X-Master-Key': orderApiKey }
-      });
-      if(!res.ok) throw new Error('Kon bestellingen niet ophalen');
-      const data = await res.json();
-      const record = data.record || {};
-      ordersCache = record.bestellingen || [];
+      const data = await getLatestRecord(orderBinId, orderApiKey);
+      if(!data.orders) data.orders = [];
+      ordersCache = data.orders;
       renderOrders();
+      renderDisplayOrders();
     } catch(e) {
-      console.error(e);
+      console.error('Fout bij laden orders:', e);
     }
   }
 
-  // Render orders operator & display
   function renderOrders() {
-    if(currentUser === 'Operator') {
-      inProgressOrders.innerHTML = '<h3>In behandeling</h3>';
-      readyOrders.innerHTML = '<h3>Klaar</h3>';
+    if(currentUser !== 'Operator') return;
 
-      ordersCache.forEach(order => {
-        const div = document.createElement('div');
-        div.className = 'orderItem';
-        div.textContent = `#${order.id} - ${order.status}`;
-        if(order.status === 'Klaar') div.classList.add('ready');
-        else if(order.status.includes('langer')) div.classList.add('delayed');
-        div.onclick = () => {
-          selectedOrderId = order.id;
-          showOrderDetails(order);
-        };
-        if(order.status === 'Klaar') {
-          readyOrders.appendChild(div);
-        } else {
-          inProgressOrders.appendChild(div);
-        }
-      });
-    } else if(currentUser === 'Display') {
-      inProgressList.innerHTML = '';
-      readyList.innerHTML = '';
-      ordersCache.forEach(order => {
-        const div = document.createElement('div');
-        div.textContent = `#${order.id}`;
-        if(order.status === 'Klaar') {
-          readyList.appendChild(div);
-        } else {
-          inProgressList.appendChild(div);
-        }
-      });
-    }
+    inProgressOrders.innerHTML = '<h3>In behandeling</h3>';
+    readyOrders.innerHTML = '<h3>Klaar</h3>';
+
+    const inProgress = ordersCache.filter(o => o.status === 'In behandeling' || o.status === 'Kan langer duren');
+    const ready = ordersCache.filter(o => o.status === 'Klaar');
+
+    inProgress.forEach(o => {
+      const div = document.createElement('div');
+      div.textContent = `#${o.id} - ${new Date(o.createdAt).toLocaleTimeString()}`;
+      div.className = 'orderItem' + (o.status === 'Kan langer duren' ? ' delayed' : '');
+      div.onclick = () => selectOrder(o.id);
+      inProgressOrders.appendChild(div);
+    });
+    ready.forEach(o => {
+      const div = document.createElement('div');
+      div.textContent = `#${o.id} - ${new Date(o.createdAt).toLocaleTimeString()}`;
+      div.className = 'orderItem ready';
+      div.onclick = () => selectOrder(o.id);
+      readyOrders.appendChild(div);
+    });
   }
 
-  // Toon details van een bestelling (operator)
-  function showOrderDetails(order) {
-    orderDetails.style.display = 'block';
-    orderInfo.innerHTML = `
-      <p><strong>Bestelnummer:</strong> #${order.id}</p>
-      <p><strong>Status:</strong> ${order.status}</p>
-      <p><strong>Besteld op:</strong> ${new Date(order.tijdstip).toLocaleString()}</p>
-      <p><strong>Opmerking klant:</strong> ${order.opmerkingKlant || 'Geen'}</p>
-      <p><strong>Producten:</strong></p>
-      <ul>${order.producten.map(p => `<li>${p.naam} x${p.qty} (€${p.prijs.toFixed(2)})</li>`).join('')}</ul>
-    `;
-    orderStatusSelect.value = order.status;
-    orderNoteInput.value = order.opmerkingOperator || '';
-  }
-
-  // Save order wijziging
-  async function saveOrderChanges() {
-    if(selectedOrderId === null) return;
-
-    const status = orderStatusSelect.value;
-    const opmerkingOperator = orderNoteInput.value.trim();
-
-    // Update in cache
-    const order = ordersCache.find(o => o.id === selectedOrderId);
+  function selectOrder(orderId) {
+    selectedOrderId = orderId;
+    const order = ordersCache.find(o => o.id === orderId);
     if(!order) return;
 
-    order.status = status;
-    order.opmerkingOperator = opmerkingOperator;
+    let html = `<p><strong>Bestelnummer:</strong> #${order.id}</p>`;
+    html += `<p><strong>Status:</strong> ${order.status}</p>`;
+    html += `<p><strong>Besteld om:</strong> ${new Date(order.createdAt).toLocaleString()}</p>`;
+    html += `<p><strong>Opmerkingen:</strong> ${order.note || '-'}</p>`;
+    html += `<p><strong>Bestelde items:</strong></p><ul>`;
+
+    Object.entries(order.items).forEach(([tab, products]) => {
+      Object.entries(products).forEach(([name, item]) => {
+        html += `<li>${item.qty}x ${name} (€${item.prijs.toFixed(2)} per stuk)</li>`;
+      });
+    });
+    html += '</ul>';
+
+    orderDetailsContent.innerHTML = html;
+    orderStatusSelect.value = order.status;
+    orderNoteInput.value = order.note || '';
+  }
+
+  // --- Order opslaan ---
+  saveOrderBtn.onclick = async () => {
+    if(selectedOrderId === null) return alert('Selecteer eerst een bestelling');
+    const order = ordersCache.find(o => o.id === selectedOrderId);
+    if(!order) return alert('Bestelling niet gevonden');
+
+    order.status = orderStatusSelect.value;
+    order.note = orderNoteInput.value.trim();
 
     try {
-      // Update jsonbin
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${orderBinId}/latest`, {
-        headers: { 'X-Master-Key': orderApiKey }
-      });
-      if(!res.ok) throw new Error('Kon bestellingen niet ophalen');
-      const data = await res.json();
-      const record = data.record || {};
-
-      // Update order in record
-      record.bestellingen = record.bestellingen.map(o => o.id === selectedOrderId ? order : o);
-
-      const putRes = await fetch(`https://api.jsonbin.io/v3/b/${orderBinId}`, {
-        method: 'PUT',
-        headers: {
-          'X-Master-Key': orderApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(record)
-      });
-      if(!putRes.ok) throw new Error('Kon bestelling niet opslaan');
-
-      alert('Bestelling opgeslagen!');
+      const data = await getLatestRecord(orderBinId, orderApiKey);
+      data.orders = data.orders.filter(o => o.id !== selectedOrderId);
+      data.orders.push(order);
+      await updateRecord(orderBinId, orderApiKey, data);
+      alert('Bestelling bijgewerkt');
+      selectedOrderId = null;
+      orderDetailsContent.innerHTML = '';
       loadOrders();
-      orderDetails.style.display = 'none';
-
     } catch(e) {
       alert('Fout bij opslaan bestelling: ' + e.message);
     }
-  }
+  };
 
-  // Delete order
-  async function deleteOrder() {
-    if(selectedOrderId === null) return;
+  // --- Order verwijderen ---
+  deleteOrderBtn.onclick = async () => {
+    if(selectedOrderId === null) return alert('Selecteer eerst een bestelling');
+
     if(!confirm('Weet je zeker dat je deze bestelling wilt verwijderen?')) return;
 
     try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${orderBinId}/latest`, {
-        headers: { 'X-Master-Key': orderApiKey }
-      });
-      if(!res.ok) throw new Error('Kon bestellingen niet ophalen');
-      const data = await res.json();
-      const record = data.record || {};
-
-      record.bestellingen = record.bestellingen.filter(o => o.id !== selectedOrderId);
-
-      const putRes = await fetch(`https://api.jsonbin.io/v3/b/${orderBinId}`, {
-        method: 'PUT',
-        headers: {
-          'X-Master-Key': orderApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(record)
-      });
-      if(!putRes.ok) throw new Error('Kon bestelling niet verwijderen');
-
-      alert('Bestelling verwijderd!');
+      const data = await getLatestRecord(orderBinId, orderApiKey);
+      data.orders = data.orders.filter(o => o.id !== selectedOrderId);
+      await updateRecord(orderBinId, orderApiKey, data);
+      alert('Bestelling verwijderd');
       selectedOrderId = null;
-      orderDetails.style.display = 'none';
+      orderDetailsContent.innerHTML = '';
       loadOrders();
     } catch(e) {
       alert('Fout bij verwijderen bestelling: ' + e.message);
     }
-  }
+  };
 
-  // Close order details
-  function closeOrderDetails() {
+  closeOrderDetailsBtn.onclick = () => {
     selectedOrderId = null;
-    orderDetails.style.display = 'none';
-  }
+    orderDetailsContent.innerHTML = '';
+  };
 
-  // Load producten & tabs
-  async function loadProductsData() {
-    try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${productBinId}/latest`, {
-        headers: { 'X-Master-Key': productApiKey }
-      });
-      if(!res.ok) throw new Error('Kon producten niet ophalen');
-      const data = await res.json();
-      const record = data.record || {};
+  // --- Tabs management ---
 
-      allProductsData = record.tabs || {};
-
-      // Default fallback tabs if missing
-      const defaultTabs = ['Drank', 'Fingerfood', "Menu's", 'Dessert', 'Salades'];
-      defaultTabs.forEach(t => {
-        if(!(t in allProductsData)) allProductsData[t] = [];
-      });
-
-      renderTabs();
-      renderProducts();
-      renderTabsManagement();
-    } catch(e) {
-      console.error(e);
-    }
-  }
-
-  // Render tabs in product beheer (operator)
   function renderTabsManagement() {
     tabsList.innerHTML = '';
     Object.keys(allProductsData).forEach(tab => {
       const div = document.createElement('div');
       div.textContent = tab;
-      if(tab === activeManageTab) div.classList.add('active');
+      div.classList.toggle('active', tab === activeManageTab);
       div.onclick = () => {
         activeManageTab = tab;
         renderTabsManagement();
-        renderProductList();
-        resetProductForm();
+        renderProductsManagement();
+        clearProductForm();
       };
       tabsList.appendChild(div);
     });
-    if(!activeManageTab) {
-      activeManageTab = Object.keys(allProductsData)[0] || null;
-      renderTabsManagement();
-      renderProductList();
-    }
+    if(!activeManageTab) activeManageTab = Object.keys(allProductsData)[0] || null;
   }
 
-  // Render product list beheer
-  function renderProductList() {
+  // --- Product management ---
+
+  function renderProductsManagement() {
     productList.innerHTML = '';
     if(!activeManageTab || !allProductsData[activeManageTab]) return;
-    allProductsData[activeManageTab].forEach((prod, i) => {
+    allProductsData[activeManageTab].forEach((product, i) => {
       const div = document.createElement('div');
-      div.textContent = prod.naam;
+      div.textContent = product.naam;
+      div.classList.toggle('active', i === editingProductIndex);
       div.onclick = () => {
         editingProductIndex = i;
-        fillProductForm(prod);
+        fillProductForm(product);
+        renderProductsManagement();
       };
       productList.appendChild(div);
     });
   }
 
-  // Vul product formulier
-  function fillProductForm(prod) {
-    productNameInput.value = prod.naam;
-    productPriceInput.value = prod.prijs;
-    productPhotoInput.value = prod.foto;
-    productAvailabilitySelect.value = prod.beschikbaar ? 'true' : 'false';
+  function fillProductForm(product) {
+    productNameInput.value = product.naam;
+    productPriceInput.value = product.prijs;
+    productPhotoInput.value = product.foto || '';
+    productAvailabilitySelect.value = product.beschikbaar ? 'true' : 'false';
   }
 
-  // Reset product formulier
-  function resetProductForm() {
+  function clearProductForm() {
     editingProductIndex = null;
     productNameInput.value = '';
     productPriceInput.value = '';
@@ -1083,157 +1068,129 @@
     productAvailabilitySelect.value = 'true';
   }
 
-  // Save product (toevoegen of wijzigen)
-  async function saveProduct() {
-    if(!activeManageTab) {
-      alert('Selecteer eerst een tab');
-      return;
-    }
+  saveProductBtn.onclick = async () => {
+    if(!activeManageTab) return alert('Selecteer eerst een tab');
     const naam = productNameInput.value.trim();
     const prijs = parseFloat(productPriceInput.value);
     const foto = productPhotoInput.value.trim();
     const beschikbaar = productAvailabilitySelect.value === 'true';
 
     if(!naam || isNaN(prijs)) {
-      alert('Vul een geldige naam en prijs in');
-      return;
+      return alert('Vul naam en prijs correct in');
     }
 
     if(!allProductsData[activeManageTab]) allProductsData[activeManageTab] = [];
 
+    const newProduct = { naam, prijs, foto, beschikbaar };
+
     if(editingProductIndex !== null) {
-      // Wijzig product
-      allProductsData[activeManageTab][editingProductIndex] = { naam, prijs, foto, beschikbaar };
+      allProductsData[activeManageTab][editingProductIndex] = newProduct;
     } else {
-      // Nieuw product
-      allProductsData[activeManageTab].push({ naam, prijs, foto, beschikbaar });
+      allProductsData[activeManageTab].push(newProduct);
     }
 
     try {
-      // Update JSONBin
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${productBinId}/latest`, {
-        headers: { 'X-Master-Key': productApiKey }
-      });
-      if(!res.ok) throw new Error('Kon producten niet ophalen');
-      const data = await res.json();
-      const record = data.record || {};
-
-      record.tabs = allProductsData;
-
-      const putRes = await fetch(`https://api.jsonbin.io/v3/b/${productBinId}`, {
-        method: 'PUT',
-        headers: {
-          'X-Master-Key': productApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(record)
-      });
-      if(!putRes.ok) throw new Error('Kon producten niet opslaan');
-
-      alert('Product opgeslagen!');
-      resetProductForm();
-      renderProductList();
-      renderProducts();
-
+      await saveProducts();
+      clearProductForm();
+      renderProductsManagement();
+      renderTabsCustomer();
+      renderProductsCustomer();
     } catch(e) {
       alert('Fout bij opslaan product: ' + e.message);
     }
-  }
+  };
 
-  // Reset product formulier handler
-  function resetProduct() {
-    resetProductForm();
-  }
+  resetProductBtn.onclick = () => {
+    clearProductForm();
+  };
 
-  // Voeg nieuwe tab toe
-  async function addTab() {
-    const tabNaam = addTabInput.value.trim();
-    if(!tabNaam) {
-      alert('Vul een geldige tabnaam in');
-      return;
-    }
-    if(tabNaam in allProductsData) {
-      alert('Tab bestaat al');
-      return;
-    }
-    allProductsData[tabNaam] = [];
+  addTabBtn.onclick = async () => {
+    const newTabName = addTabInput.value.trim();
+    if(!newTabName) return alert('Voer een naam in voor de tab');
+    if(allProductsData[newTabName]) return alert('Tab bestaat al');
+
+    allProductsData[newTabName] = [];
     addTabInput.value = '';
-
+    activeManageTab = newTabName;
     try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${productBinId}/latest`, {
-        headers: { 'X-Master-Key': productApiKey }
-      });
-      if(!res.ok) throw new Error('Kon producten niet ophalen');
-      const data = await res.json();
-      const record = data.record || {};
-
-      record.tabs = allProductsData;
-
-      const putRes = await fetch(`https://api.jsonbin.io/v3/b/${productBinId}`, {
-        method: 'PUT',
-        headers: {
-          'X-Master-Key': productApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(record)
-      });
-      if(!putRes.ok) throw new Error('Kon tab niet opslaan');
-
-      alert('Tab toegevoegd!');
+      await saveProducts();
       renderTabsManagement();
-
+      renderTabsCustomer();
+      renderProductsManagement();
+      renderProductsCustomer();
     } catch(e) {
       alert('Fout bij toevoegen tab: ' + e.message);
     }
+  };
+
+  async function saveProducts() {
+    // We wrappen de tabs in een object "tabs" om consistent te blijven met JSONBin structuur
+    const saveData = { tabs: allProductsData };
+    await updateRecord(productBinId, productApiKey, saveData);
   }
 
-  // Event listeners
-  cartBtn.onclick = showCart;
-  closeCartBtn.onclick = hideCart;
-  placeOrderBtn.onclick = placeOrder;
-  loginBtn.onclick = handleLogin;
-  saveOrderBtn.onclick = saveOrderChanges;
-  deleteOrderBtn.onclick = deleteOrder;
-  closeOrderDetailsBtn.onclick = closeOrderDetails;
-  saveProductBtn.onclick = saveProduct;
-  resetProductBtn.onclick = resetProduct;
-  addTabBtn.onclick = addTab;
+  // --- Display scherm rendering ---
 
-  // Init
-  loadUserType();
+  function renderDisplayOrders() {
+    if(currentUser !== 'Display') return;
+    inProgressList.innerHTML = '';
+    readyList.innerHTML = '';
 
-  if(currentUser === 'Customer') showCustomerUI();
-  else if(currentUser === 'Operator') showOperatorUI();
-  else if(currentUser === 'Display') showDisplayUI();
+    const inProgress = ordersCache.filter(o => o.status === 'In behandeling' || o.status === 'Kan langer duren');
+    const ready = ordersCache.filter(o => o.status === 'Klaar');
 
-  // Polling every 5 seconds for real-time sync
-  setInterval(() => {
-    loadOrders();
-    if(currentUser === 'Operator') loadProductsData();
-  }, 5000);
+    inProgress.forEach(o => {
+      const div = document.createElement('div');
+      div.textContent = `#${o.id}`;
+      inProgressList.appendChild(div);
+    });
 
-  // Keyboard shortcut to open login screen for operator or display
-  document.addEventListener('keydown', e => {
-    if(e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'z') {
-      showLoginScreen();
+    // Check welke zijn nieuw klaar en speel geluid
+    const oldReadyIds = new Set([...readyList.querySelectorAll('div')].map(d => d.textContent.replace('#','')));
+    ready.forEach(o => {
+      const idStr = `#${o.id}`;
+      if(!oldReadyIds.has(idStr)) {
+        doneSound.play().catch(() => {});
+      }
+      const div = document.createElement('div');
+      div.textContent = `#${o.id}`;
+      readyList.appendChild(div);
+    });
+  }
+
+  // --- Header klik = uitloggen terug naar klant ---
+  header.onclick = () => {
+    if(currentUser !== 'Customer') {
+      if(confirm('Weet je zeker dat je wilt uitloggen?')) {
+        currentUser = 'Customer';
+        showCustomerUI();
+      }
+    }
+  };
+
+  // --- Shortcut CTRL+SHIFT+Z => login scherm ---
+  window.addEventListener('keydown', e => {
+    if(e.ctrlKey && e.shiftKey && e.code === 'KeyZ') {
+      if(currentUser === 'Customer') {
+        showLoginScreen();
+      }
     }
   });
 
-  // Display plays sound when order status changes to 'Klaar'
-  let lastReadyOrderIds = new Set();
-  function checkAndPlayDoneSound() {
-    if(currentUser !== 'Display') return;
-    const readyOrders = ordersCache.filter(o => o.status === 'Klaar').map(o => o.id);
-    const newReady = readyOrders.filter(id => !lastReadyOrderIds.has(id));
-    if(newReady.length > 0) {
-      doneSound.play();
-      lastReadyOrderIds = new Set(readyOrders);
+  // --- Start ---
+  showCustomerUI();
+  loadProductsData();
+
+  // --- Polling voor realtime updates (elke 3 sec) ---
+  setInterval(() => {
+    if(currentUser === 'Operator' || currentUser === 'Display') {
+      loadOrders();
+      if(currentUser === 'Operator') loadProductsData();
     }
-  }
+  }, 3000);
 
-  // Check done sound every 5 seconds
-  setInterval(checkAndPlayDoneSound, 5000);
-
+})();
 </script>
+
 </body>
 </html>
