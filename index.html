@@ -3,345 +3,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Joey's Restaurant Bestelsysteem</title>
+  <title>Restaurant Operator</title>
   <style>
-    /* --------- Basis Styling --------- */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    body {
-      background: linear-gradient(to bottom right, #f4f4f4, #ffffff);
-      color: #333;
-      transition: all 0.3s ease;
-    }
-    h1, h2, h3 {
-      margin-bottom: 10px;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #0088ff;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: transform 0.2s ease, background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #006ad6;
-      transform: scale(1.05);
-    }
-    .hidden {
-      display: none;
-    }
-
-    /* --------- Pop-up login --------- */
-    #loginPopup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.2);
-      transition: transform 0.3s ease;
-      z-index: 1000;
-    }
-    #loginPopup.active {
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    /* --------- Winkelmandje (Mobielvriendelijk) --------- */
-    #cart {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      padding: 15px;
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 100;
-    }
-    #cartItems {
-      max-height: 200px;
-      overflow-y: auto;
-      width: 100%;
-    }
-
-    /* --------- Tabs menu --------- */
-    .tab-container {
-      display: flex;
-      justify-content: space-around;
-      margin: 10px 0;
-      flex-wrap: wrap;
-    }
-    .tab {
-      padding: 10px;
-      background: #eaeaea;
-      border-radius: 10px;
-      margin: 5px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    .tab:hover {
-      background: #d0d0d0;
-    }
-
-    /* --------- Product Cards --------- */
-    .product {
-      background: white;
-      margin: 10px;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
-    .product:hover {
-      transform: scale(1.02);
-    }
-
-    /* --------- Operator Panel --------- */
-    #operatorPanel {
-      padding: 20px;
-    }
-    .orderCard {
-      background: #fefefe;
-      padding: 15px;
-      margin: 10px 0;
-      border-left: 5px solid #0088ff;
-      border-radius: 10px;
-    }
-
-    /* --------- Display Panel --------- */
-    #displayScreen {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      padding: 20px;
-    }
-    .displayColumn {
-      border-radius: 10px;
-      padding: 10px;
-      background: #fff;
-      box-shadow: 0 0 20px rgba(0,0,0,0.05);
-    }
-    .done {
-      background: #d4f8d4;
-      color: green;
-    }
-    .inProgress {
-      background: #fce7c3;
-      color: #a05c00;
-    }
-
-    /* --------- Animations --------- */
-    .fade-in {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #f4f4f4; color: #333; }
+    #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 999; }
+    #loginBox { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #000; }
+    #appContainer { display: flex; height: 100vh; display: none; }
+    #sidebar { width: 250px; background: #222; color: white; overflow-y: auto; padding: 10px; }
+    .orderItem { padding: 10px; background: #333; margin-bottom: 5px; cursor: pointer; border-radius: 5px; }
+    .orderItem:hover { background: #444; }
+    #orderDetails { flex: 1; padding: 20px; background: white; display: flex; flex-direction: column; justify-content: space-between; }
+    #detailsNote { background: #fefefe; border: 2px dashed #ccc; padding: 15px; min-height: 300px; margin-bottom: 20px; white-space: pre-wrap; }
+    #statusSelect, #saveBtn { padding: 10px; font-size: 16px; margin-right: 10px; }
+    #saveBtn { background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #saveBtn:hover { background: #218838; }
+    #clientView { padding: 20px; text-align: center; }
   </style>
 </head>
 <body>
 
-  <!-- Inlog popup -->
-  <div id="loginPopup">
-    <h2>Login</h2>
-    <input type="text" id="loginUser" placeholder="Gebruikersnaam"><br><br>
-    <input type="password" id="loginPass" placeholder="Wachtwoord"><br><br>
-    <button onclick="doLogin()">Login</button>
+<div id="loginOverlay">
+  <div id="loginBox">
+    <h2 style="margin-bottom:10px;">Login</h2>
+    <input type="text" id="username" placeholder="Username" style="padding:10px; width:100%; margin-bottom:10px;">
+    <input type="password" id="password" placeholder="Password" style="padding:10px; width:100%; margin-bottom:10px;">
+    <button onclick="handleLogin()" style="padding:10px 20px;">Login</button>
   </div>
+</div>
 
-  <!-- Klant menu -->
-  <div id="mainMenu" class="fade-in">
-    <h1>Welkom bij Joey’s Restaurant</h1>
-    <div class="tab-container" id="tabContainer">
-      <div class="tab" onclick="showTab('Drank')">Drank</div>
-      <div class="tab" onclick="showTab('Fingerfood')">Fingerfood</div>
-      <div class="tab" onclick="showTab('Desserts')">Desserts</div>
-      <div class="tab" onclick="showTab('Menu')">Menu</div>
+<div id="appContainer">
+  <div id="sidebar">
+    <h3>Bestellingen</h3>
+    <div id="ordersList"></div>
+  </div>
+  <div id="orderDetails">
+    <div id="detailsNote">Selecteer een bestelling links.</div>
+    <div>
+      <select id="statusSelect">
+        <option value="In behandeling">In behandeling</option>
+        <option value="Klaar">Klaar</option>
+      </select>
+      <button id="saveBtn" onclick="saveStatus()">Opslaan</button>
     </div>
-    <div id="productList" class="fade-in"></div>
   </div>
+</div>
 
-  <!-- Winkelmand -->
-  <div id="cart" class="hidden">
-    <div id="cartItems"></div>
-    <button onclick="checkout()">Bestel</button>
-  </div>
+<div id="clientView">
+  <h2>Welkom bij het restaurant 👋</h2>
+  <p>Alleen gastenmenu zichtbaar.</p>
+</div>
 
-  <!-- Operator -->
-  <div id="operatorPanel" class="hidden">
-    <h2>Operator Panel</h2>
-    <div id="orderList"></div>
-  </div>
+<script>
+const BIN_ID = "688f6efe7b4b8670d8ac3f46";
+const API_KEY = "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O";
 
-  <!-- Display screen -->
-  <div id="displayScreen" class="hidden">
-    <div class="displayColumn" id="inProgressList"><h3>In Behandeling</h3></div>
-    <div class="displayColumn" id="doneList"><h3>Klaar</h3></div>
-  </div>
+let currentOrder = null;
+let currentData = [];
 
-  <script>
-    // ---- Producten hardcoded ----
-    const products = {
-      "Drank": [
-        { name: "Cola", price: 2 },
-        { name: "Water", price: 1.5 }
-      ],
-      "Fingerfood": [
-        { name: "Pringles Natural", price: 0.5 },
-        { name: "Pringles BBQ", price: 0.6 }
-      ],
-      "Desserts": [
-        { name: "IJsje", price: 3 }
-      ],
-      "Menu": [
-        { name: "Burger Menu", price: 8.5 }
-      ]
-    };
+function fetchOrders() {
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': API_KEY }
+  })
+  .then(res => res.json())
+  .then(json => {
+    currentData = json.record.orders || [];
+    updateOrdersUI();
+  });
+}
 
-    let currentTab = "";
-    let cart = [];
+function updateOrdersUI() {
+  const list = document.getElementById("ordersList");
+  list.innerHTML = '';
+  currentData.forEach(order => {
+    const div = document.createElement("div");
+    div.className = "orderItem";
+    div.innerText = `#${order.id} - ${order.status}`;
+    div.onclick = () => showOrder(order);
+    list.appendChild(div);
+  });
+}
 
-    function showTab(tabName) {
-      currentTab = tabName;
-      const list = document.getElementById("productList");
-      list.innerHTML = "";
-      products[tabName].forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "product";
-        div.innerHTML = `
-          <h3>${item.name}</h3>
-          <p>€${item.price.toFixed(2)}</p>
-          <button onclick="addToCart('${tabName}', ${index})">Voeg toe</button>
-        `;
-        list.appendChild(div);
-      });
-    }
+function showOrder(order) {
+  currentOrder = order;
+  const details = document.getElementById("detailsNote");
+  const itemsText = order.items.map(item => `• ${item.name} x${item.qty} - €${item.total.toFixed(2)}`).join("\n");
+  details.innerText = `Bestelling #${order.id}\n\n${itemsText}\n\nOpmerkingen: ${order.opmerkingen || 'Geen'}\n\nTotaal: €${order.total.toFixed(2)}`;
+  document.getElementById("statusSelect").value = order.status;
+}
 
-    function addToCart(tab, index) {
-      const product = products[tab][index];
-      cart.push(product);
-      updateCartUI();
-    }
+function saveStatus() {
+  if (!currentOrder) return alert("Selecteer een bestelling.");
+  const newStatus = document.getElementById("statusSelect").value;
+  const orderIndex = currentData.findIndex(o => o.id === currentOrder.id);
+  if (orderIndex > -1) {
+    currentData[orderIndex].status = newStatus;
+    pushOrders(currentData);
+  }
+}
 
-    function updateCartUI() {
-      const el = document.getElementById("cartItems");
-      el.innerHTML = cart.map(p => `<div>${p.name} - €${p.price.toFixed(2)}</div>`).join("");
-      document.getElementById("cart").classList.remove("hidden");
-    }
+function pushOrders(data) {
+  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Master-Key": API_KEY
+    },
+    body: JSON.stringify({ orders: data })
+  }).then(() => fetchOrders());
+}
 
-    function checkout() {
-      if (cart.length === 0) return alert("Mandje is leeg!");
-      const order = {
-        id: Date.now(),
-        time: new Date().toLocaleTimeString(),
-        items: cart,
-        status: "in behandeling"
-      };
-      fetch('https://api.jsonbin.io/v3/b/688f6efe7b4b8670d8ac3f46', {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Master-Key": "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O"
-        },
-        body: JSON.stringify({ orders: [order] })
-      }).then(() => {
-        alert("Bestelling geplaatst!");
-        cart = [];
-        updateCartUI();
-        document.getElementById("cart").classList.add("hidden");
-      });
-    }
+function handleLogin() {
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
+  if (u === "Operator" && p === "8008") {
+    document.getElementById("loginOverlay").style.display = "none";
+    document.getElementById("appContainer").style.display = "flex";
+    document.getElementById("clientView").style.display = "none";
+    fetchOrders();
+    setInterval(fetchOrders, 3000);
+  } else if (u === "OperatorScreen" && p === "8008") {
+    alert("Display scherm komt nog bro 😎");
+    // later hier displaymode inbouwen
+  } else {
+    alert("Ongeldige gegevens.");
+  }
+}
 
-    // ---- Login handler ----
-    function doLogin() {
-      const user = document.getElementById("loginUser").value;
-      const pass = document.getElementById("loginPass").value;
-      document.getElementById("loginPopup").classList.remove("active");
-      if (user === "Operator" && pass === "8008") {
-        document.getElementById("mainMenu").classList.add("hidden");
-        document.getElementById("operatorPanel").classList.remove("hidden");
-        pollOrders();
-      } else if (user === "OperatorScreen" && pass === "8008") {
-        document.getElementById("mainMenu").classList.add("hidden");
-        document.getElementById("displayScreen").classList.remove("hidden");
-        pollOrders();
-      } else {
-        alert("Foute login");
-      }
-    }
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === "Z") {
+    document.getElementById("loginOverlay").style.display = "flex";
+  }
+});
+</script>
 
-    // ---- Open login popup via toetsencombinatie ----
-    document.addEventListener("keydown", e => {
-      if (e.ctrlKey && e.shiftKey && e.key === "Z") {
-        document.getElementById("loginPopup").classList.add("active");
-      }
-    });
-
-    // ---- Order ophalen ----
-    function pollOrders() {
-      setInterval(() => {
-        fetch('https://api.jsonbin.io/v3/b/688f6efe7b4b8670d8ac3f46/latest', {
-          headers: {
-            "X-Master-Key": "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O"
-          }
-        })
-        .then(res => res.json())
-        .then(data => {
-          const orders = data.record.orders || [];
-          updateOperatorUI(orders);
-          updateDisplayUI(orders);
-        });
-      }, 2000);
-    }
-
-    function updateOperatorUI(orders) {
-      const list = document.getElementById("orderList");
-      if (!list) return;
-      list.innerHTML = "";
-      orders.forEach(order => {
-        const div = document.createElement("div");
-        div.className = "orderCard";
-        div.innerHTML = `
-          <h4>Bestel #${order.id}</h4>
-          <p>${order.time}</p>
-          <p>Status: ${order.status}</p>
-          <p>${order.items.map(i => i.name).join(", ")}</p>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    function updateDisplayUI(orders) {
-      const inProgress = document.getElementById("inProgressList");
-      const done = document.getElementById("doneList");
-      if (!inProgress || !done) return;
-      inProgress.innerHTML = "<h3>In Behandeling</h3>";
-      done.innerHTML = "<h3>Klaar</h3>";
-      orders.forEach(order => {
-        const el = document.createElement("div");
-        el.className = order.status === "klaar" ? "done" : "inProgress";
-        el.innerText = `#${order.id}`;
-        if (order.status === "klaar") {
-          const sound = new Audio("JR/Sounds/DoneSoundForScreen.mp3");
-          sound.play();
-          done.appendChild(el);
-        } else {
-          inProgress.appendChild(el);
-        }
-      });
-    }
-  </script>
 </body>
 </html>
