@@ -1,140 +1,969 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Restaurant Operator</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background: #f4f4f4; color: #333; }
-    #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 999; }
-    #loginBox { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #000; }
-    #appContainer { display: flex; height: 100vh; display: none; }
-    #sidebar { width: 250px; background: #222; color: white; overflow-y: auto; padding: 10px; }
-    .orderItem { padding: 10px; background: #333; margin-bottom: 5px; cursor: pointer; border-radius: 5px; }
-    .orderItem:hover { background: #444; }
-    #orderDetails { flex: 1; padding: 20px; background: white; display: flex; flex-direction: column; justify-content: space-between; }
-    #detailsNote { background: #fefefe; border: 2px dashed #ccc; padding: 15px; min-height: 300px; margin-bottom: 20px; white-space: pre-wrap; }
-    #statusSelect, #saveBtn { padding: 10px; font-size: 16px; margin-right: 10px; }
-    #saveBtn { background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    #saveBtn:hover { background: #218838; }
-    #clientView { padding: 20px; text-align: center; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Joey's Restaurant Bestelsysteem</title>
+<style>
+  /* Baseline styling */
+  * {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  body {
+    margin: 0; background: #fff8e7; color: #333;
+  }
+  header {
+    background: #ffc107; color: #3a3a3a;
+    padding: 1rem 2rem; font-size: 1.8rem;
+    font-weight: 700; text-align: center;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    user-select: none;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex; justify-content: center; background: #fff;
+    border-bottom: 2px solid #ffc107;
+  }
+  .tab {
+    padding: 1rem 2rem;
+    cursor: pointer;
+    font-weight: 600;
+    border-bottom: 4px solid transparent;
+    transition: border-color 0.3s ease;
+  }
+  .tab.active {
+    border-color: #ffc107;
+    color: #d48806;
+  }
+
+  /* CONTENT MENU */
+  #menuContent {
+    max-width: 900px; margin: 1rem auto;
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    justify-content: center;
+  }
+  .menu-item {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    width: 180px;
+    cursor: pointer;
+    text-align: center;
+    user-select: none;
+    transition: transform 0.15s ease;
+  }
+  .menu-item:hover {
+    transform: scale(1.05);
+  }
+  .menu-item h3 {
+    margin: 0.4rem 0 0.8rem;
+  }
+  .menu-item span {
+    font-weight: 700;
+    color: #555;
+  }
+
+  /* WINKELMANDJE BOTTOM BAR */
+  #cartBar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #ffc107;
+    padding: 1rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+    user-select: none;
+    z-index: 1000;
+  }
+  #cartBar button {
+    background: #d48806;
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  #cartBar button:disabled {
+    background: #a66e00;
+    cursor: not-allowed;
+  }
+
+  /* WINKELMANDJE ITEMS */
+  #cartItems {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  /* OPMERKINGEN */
+  #remarksSection {
+    max-width: 900px;
+    margin: 1rem auto 5rem auto;
+    padding: 1rem 2rem;
+    background: #fffbea;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    user-select: none;
+  }
+  #remarksSection textarea {
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    border: 1px solid #ffc107;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    resize: none;
+  }
+
+  /* BESTEL STATUS SCHERM */
+  #orderStatusScreen {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1500;
+  }
+  #orderStatusScreen.active {
+    display: flex;
+  }
+  #orderStatusScreen .content {
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+    max-width: 350px;
+    user-select: none;
+  }
+  #orderStatusScreen h2 {
+    margin: 0 0 1rem;
+    color: #d48806;
+  }
+  #orderStatusScreen p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  #orderStatusScreen button {
+    background: #d48806;
+    color: white;
+    font-weight: 700;
+    border: none;
+    padding: 0.7rem 2rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  /* LOGIN SCHERM */
+  #loginScreen {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  #loginScreen.active {
+    display: flex;
+  }
+  #loginBox {
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 16px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    user-select: none;
+  }
+  #loginBox h2 {
+    margin-bottom: 1rem;
+    color: #d48806;
+  }
+  #loginBox input {
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border: 1.5px solid #ffc107;
+    font-size: 1rem;
+  }
+  #loginBox button {
+    background: #d48806;
+    color: white;
+    font-weight: 700;
+    border: none;
+    width: 100%;
+    padding: 0.8rem 0;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+
+  /* OPERATOR SCHERM */
+  #operatorScreen {
+    display: none;
+    max-width: 1000px;
+    margin: 1rem auto 2rem auto;
+    padding: 1rem 2rem;
+  }
+  #operatorScreen.active {
+    display: block;
+  }
+  #ordersList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .orderCard {
+    background: #fffbea;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    cursor: pointer;
+    padding: 1rem 1.5rem;
+    width: 140px;
+    text-align: center;
+    user-select: none;
+    transition: 0.2s ease;
+  }
+  .orderCard:hover, .orderCard.selected {
+    background: #d48806;
+    color: white;
+  }
+  .orderCard.ready {
+    background: #b6e2b3;
+    color: #27632a;
+  }
+
+  #orderDetailsBox {
+    margin-top: 2rem;
+    max-width: 600px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    padding: 1.5rem 2rem;
+  }
+  #orderDetailsBox h3 {
+    margin-top: 0;
+    color: #d48806;
+  }
+  #orderDetailsBox p {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  #orderDetailsBox label {
+    font-weight: 700;
+  }
+  #orderDetailsBox select {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: 1.5px solid #ffc107;
+    margin: 0.5rem 0 1.5rem;
+  }
+  #orderDetailsBox button {
+    background: #d48806;
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-right: 1rem;
+  }
+  #orderDetailsBox button.deleteBtn {
+    background: #d9534f;
+  }
+
+  /* DISPLAY SCHERM */
+  #displayScreen {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 2rem 4rem 2rem;
+  }
+  #displayScreen h2 {
+    text-align: center;
+    color: #d48806;
+    margin-bottom: 1rem;
+  }
+  #displayLists {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .displayList {
+    flex: 1 1 45%;
+    background: #fffbea;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    padding: 1rem;
+  }
+  .displayList h3 {
+    color: #444;
+    border-bottom: 2px solid #d48806;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .displayItem {
+    font-weight: 700;
+    background: #d6b942;
+    color: #3a3a3a;
+    border-radius: 12px;
+    margin: 0.3rem 0;
+    padding: 0.7rem 1rem;
+    text-align: center;
+  }
+  .displayItem.ready {
+    background: #74b573;
+    color: white;
+  }
+
+  /* Reset telling knop */
+  #resetCounterBtn {
+    display: block;
+    margin: 2rem auto 3rem auto;
+    background: #d9534f;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    padding: 0.9rem 2rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  #resetCounterBtn:disabled {
+    background: #a66e00;
+    cursor: not-allowed;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    #displayLists {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #orderDetailsBox {
+      margin: 1rem;
+    }
+  }
+
+</style>
 </head>
 <body>
 
-<div id="loginOverlay">
-  <div id="loginBox">
-    <h2 style="margin-bottom:10px;">Login</h2>
-    <input type="text" id="username" placeholder="Username" style="padding:10px; width:100%; margin-bottom:10px;">
-    <input type="password" id="password" placeholder="Password" style="padding:10px; width:100%; margin-bottom:10px;">
-    <button onclick="handleLogin()" style="padding:10px 20px;">Login</button>
+<header>🍔 Joey's Restaurant</header>
+
+<!-- KLANT MENU MET TABS -->
+<div id="customerMenu">
+  <div class="tabs" id="tabsContainer">
+    <!-- Tabs komen via JS -->
+  </div>
+  <div id="menuContent"></div>
+
+  <!-- Winkelmandje bottom bar -->
+  <div id="cartBar" style="display:none;">
+    <div id="cartItems">Winkelmand: 0 items</div>
+    <button id="checkoutBtn" disabled>Afrekenen</button>
+  </div>
+
+  <!-- Opmerkingen veld -->
+  <div id="remarksSection" style="display:none;">
+    <label for="orderRemarks"><strong>Opmerkingen bij bestelling:</strong></label><br />
+    <textarea id="orderRemarks" placeholder="Bijvoorbeeld: geen ui, extra saus, etc."></textarea>
   </div>
 </div>
 
-<div id="appContainer">
-  <div id="sidebar">
-    <h3>Bestellingen</h3>
-    <div id="ordersList"></div>
+<!-- BESTEL STATUS SCHERM NA AFREKENEN -->
+<div id="orderStatusScreen">
+  <div class="content">
+    <h2>Bestelling ontvangen!</h2>
+    <p>Je bestelnummer is <span id="displayOrderNumber"></span></p>
+    <p>Status: <span id="displayOrderStatus">In behandeling</span></p>
+    <button id="closeStatusBtn">Sluit</button>
   </div>
-  <div id="orderDetails">
-    <div id="detailsNote">Selecteer een bestelling links.</div>
-    <div>
-      <select id="statusSelect">
-        <option value="In behandeling">In behandeling</option>
-        <option value="Klaar">Klaar</option>
-      </select>
-      <button id="saveBtn" onclick="saveStatus()">Opslaan</button>
+</div>
+
+<!-- LOGIN SCHERM OP CTRL+SHIFT+Z -->
+<div id="loginScreen">
+  <div id="loginBox">
+    <h2>Login Operator / Display</h2>
+    <input id="loginUser" placeholder="Gebruikersnaam" autocomplete="off" />
+    <input id="loginPass" type="password" placeholder="Wachtwoord" autocomplete="off" />
+    <button id="loginBtn">Inloggen</button>
+  </div>
+</div>
+
+<!-- OPERATOR SCHERM -->
+<div id="operatorScreen">
+  <h2>Operator Paneel</h2>
+  <div id="ordersList"></div>
+
+  <div id="orderDetailsBox" style="display:none;">
+    <h3>Bestelling #<span id="detailOrderNumber"></span></h3>
+    <p><strong>Product:</strong> <span id="detailProduct"></span></p>
+    <p><strong>Aantal:</strong> <span id="detailAmount"></span></p>
+    <p><strong>Prijs:</strong> €<span id="detailPrice"></span></p>
+    <p><strong>Opmerkingen:</strong> <span id="detailRemarks"></span></p>
+
+    <label for="statusSelect">Status wijzigen:</label>
+    <select id="statusSelect">
+      <option value="In behandeling">In behandeling</option>
+      <option value="Klaar">Klaar</option>
+    </select>
+    <br/><br/>
+    <button id="saveStatusBtn">Opslaan</button>
+    <button id="deleteOrderBtn" class="deleteBtn">Verwijder bestelling</button>
+  </div>
+
+  <button id="resetCounterBtn" disabled>Reset telling</button>
+</div>
+
+<!-- DISPLAY SCHERM -->
+<div id="displayScreen">
+  <h2>Display Bestellingen</h2>
+  <div id="displayLists">
+    <div class="displayList">
+      <h3>In Behandeling</h3>
+      <div id="displayPending"></div>
+    </div>
+    <div class="displayList">
+      <h3>Klaar</h3>
+      <div id="displayReady"></div>
     </div>
   </div>
 </div>
 
-<div id="clientView">
-  <h2>Welkom bij het restaurant 👋</h2>
-  <p>Alleen gastenmenu zichtbaar.</p>
-</div>
-
 <script>
-const BIN_ID = "688f6efe7b4b8670d8ac3f46";
-const API_KEY = "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O";
+  /* --- CONSTANTEN JSONBIN --- */
+  const ORDER_BIN_ID = "688f6efe7b4b8670d8ac3f46";
+  const ORDER_API_KEY = "$2a$10$XpZeyd.RhynC0Ie0VWma7uJPbMYdUAIHuG24Smc5V0C5LU5d11H5O";
 
-let currentOrder = null;
-let currentData = [];
+  /* --- TAB DATA: HARDGEKODED PRODUCTEN --- */
+  const PRODUCTS = {
+    "Dranken": [
+      { id: "cola", name: "Cola", price: 1.50 },
+      { id: "water", name: "Water", price: 1.00 },
+      { id: "moeder_drinken", name: "Moeders Drank", price: 0.10 }
+    ],
+    "Fingerfood": [
+      { id: "kip_nugget", name: "Kip Nugget", price: 0.30 },
+      { id: "frikandel", name: "Frikandel", price: 0.30 },
+      { id: "bami_blok", name: "Bami Blok", price: 0.30},
+      {id: "loempia", name: "Loempia", price: 0.30}
+    ],
+    "Desserts": [
+      { id: "icecream", name: "IJsje", price: 2.00 },
+      { id: "brownie", name: "Brownie", price: 2.50 }
+    ],
+    "Menus": [
+      { id: "friet_klein", name: "Frietjes Klein", price: 1.22 },
+      { id: "friet_medium", name: "Frietjes Medium", price: 2.45 },
+      { id: "friet_groot", name: "Frietjes Groot", price: 3.95}
+    ],
+    "Salades": [
+      { id: "salade1", name: "Caesar salade", price: 5.50 },
+      { id: "salade2", name: "Griekse salade", price: 6.00 }
+    ],
+    "Saus": [
+      { id: "mayonaise", name: "Mayonaise", price: 0.99 },
+      { id: "knoflook_saus", name: "Knoflook Saus", price: 0.99 },
+      { id: "curry", name: "Curry", price: 0.99 },
+    ]
+  };
 
-function fetchOrders() {
-  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': API_KEY }
-  })
-  .then(res => res.json())
-  .then(json => {
-    currentData = json.record.orders || [];
-    updateOrdersUI();
-  });
-}
+  /* --- APP STATE --- */
+  let selectedTab = "Dranken";
+  let cart = [];
+  let orderCounter = 1;
+  let currentOrderDetails = null;
+  let pollingInterval = null;
+  let lastLoadedOrders = [];
+  let loggedInAs = null; // null, "Operator", "OperatorScreen"
 
-function updateOrdersUI() {
-  const list = document.getElementById("ordersList");
-  list.innerHTML = '';
-  currentData.forEach(order => {
-    const div = document.createElement("div");
-    div.className = "orderItem";
-    div.innerText = `#${order.id} - ${order.status}`;
-    div.onclick = () => showOrder(order);
-    list.appendChild(div);
-  });
-}
+  /* --- INIT --- */
+  window.onload = () => {
+    initTabs();
+    showTab(selectedTab);
+    loadOrdersFromServer();
+    startPolling();
 
-function showOrder(order) {
-  currentOrder = order;
-  const details = document.getElementById("detailsNote");
-  const itemsText = order.items.map(item => `• ${item.name} x${item.qty} - €${item.total.toFixed(2)}`).join("\n");
-  details.innerText = `Bestelling #${order.id}\n\n${itemsText}\n\nOpmerkingen: ${order.opmerkingen || 'Geen'}\n\nTotaal: €${order.total.toFixed(2)}`;
-  document.getElementById("statusSelect").value = order.status;
-}
+    setupKeyboardShortcut();
+    setupEventListeners();
+  };
 
-function saveStatus() {
-  if (!currentOrder) return alert("Selecteer een bestelling.");
-  const newStatus = document.getElementById("statusSelect").value;
-  const orderIndex = currentData.findIndex(o => o.id === currentOrder.id);
-  if (orderIndex > -1) {
-    currentData[orderIndex].status = newStatus;
-    pushOrders(currentData);
+  function setupKeyboardShortcut() {
+    document.addEventListener("keydown", e => {
+      if (e.ctrlKey && e.shiftKey && (e.key === "Z" || e.key === "z")) {
+        document.getElementById("loginScreen").classList.add("active");
+      }
+    });
   }
-}
 
-function pushOrders(data) {
-  fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Master-Key": API_KEY
-    },
-    body: JSON.stringify({ orders: data })
-  }).then(() => fetchOrders());
-}
-
-function handleLogin() {
-  const u = document.getElementById("username").value;
-  const p = document.getElementById("password").value;
-  if (u === "Operator" && p === "8008") {
-    document.getElementById("loginOverlay").style.display = "none";
-    document.getElementById("appContainer").style.display = "flex";
-    document.getElementById("clientView").style.display = "none";
-    fetchOrders();
-    setInterval(fetchOrders, 3000);
-  } else if (u === "OperatorScreen" && p === "8008") {
-    alert("Display scherm komt nog bro 😎");
-    // later hier displaymode inbouwen
-  } else {
-    alert("Ongeldige gegevens.");
+  function setupEventListeners() {
+    document.getElementById("loginBtn").onclick = handleLogin;
+    document.getElementById("checkoutBtn").onclick = checkout;
+    document.getElementById("closeStatusBtn").onclick = () => {
+      document.getElementById("orderStatusScreen").classList.remove("active");
+    };
+    document.getElementById("saveStatusBtn").onclick = saveOrderStatus;
+    document.getElementById("deleteOrderBtn").onclick = deleteOrder;
+    document.getElementById("resetCounterBtn").onclick = resetCounter;
   }
-}
 
-document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.shiftKey && e.key === "Z") {
-    document.getElementById("loginOverlay").style.display = "flex";
+  /* --- TABS --- */
+  function initTabs() {
+    const tabsContainer = document.getElementById("tabsContainer");
+    tabsContainer.innerHTML = "";
+    Object.keys(PRODUCTS).forEach(tabName => {
+      const tab = document.createElement("div");
+      tab.className = "tab";
+      tab.textContent = tabName;
+      tab.onclick = () => {
+        showTab(tabName);
+      };
+      tabsContainer.appendChild(tab);
+    });
   }
-});
+
+  function showTab(tabName) {
+    selectedTab = tabName;
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.classList.toggle("active", tab.textContent === tabName);
+    });
+    renderMenuItems(PRODUCTS[tabName]);
+  }
+
+  /* --- MENU ITEMS --- */
+  function renderMenuItems(items) {
+    const menuContent = document.getElementById("menuContent");
+    menuContent.innerHTML = "";
+    items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "menu-item";
+      div.innerHTML = `<h3>${item.name}</h3><span>€${item.price.toFixed(2)}</span>`;
+      div.onclick = () => addToCart(item);
+      menuContent.appendChild(div);
+    });
+  }
+
+  /* --- WINKELMANDJE --- */
+  function addToCart(product) {
+    // Check of item al in winkelmand
+    let cartItem = cart.find(i => i.id === product.id);
+    if (!cartItem) {
+      cart.push({ ...product, amount: 1 });
+    } else {
+      if(product.id.startsWith("pringles")) {
+        // max 50 chips
+        if(cartItem.amount < 50) cartItem.amount++;
+      } else {
+        cartItem.amount++;
+      }
+    }
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const cartBar = document.getElementById("cartBar");
+    if(cart.length === 0) {
+      cartBar.style.display = "none";
+      document.getElementById("remarksSection").style.display = "none";
+    } else {
+      cartBar.style.display = "flex";
+      document.getElementById("remarksSection").style.display = "block";
+      const totalItems = cart.reduce((a,b) => a + b.amount, 0);
+      document.getElementById("cartItems").textContent = `Winkelmand: ${totalItems} item${totalItems > 1 ? "s" : ""}`;
+      document.getElementById("checkoutBtn").disabled = false;
+    }
+  }
+
+</script>
+<script>
+  /* --- JSONBIN HELPERS --- */
+  const ORDER_BIN_URL = `https://api.jsonbin.io/v3/b/${ORDER_BIN_ID}`;
+
+  async function fetchOrders() {
+    try {
+      const res = await fetch(ORDER_BIN_URL + "/latest", {
+        headers: { "X-Master-Key": ORDER_API_KEY }
+      });
+      if (!res.ok) throw new Error("Fout bij ophalen orders");
+      const json = await res.json();
+      return json.record.orders || [];
+    } catch (e) {
+      console.error("Fetch orders error:", e);
+      return [];
+    }
+  }
+
+  async function saveOrders(orders, counter) {
+    try {
+      const body = {
+        orders: orders,
+        counter: counter
+      };
+      const res = await fetch(ORDER_BIN_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": ORDER_API_KEY
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error("Fout bij opslaan orders");
+    } catch (e) {
+      console.error("Save orders error:", e);
+    }
+  }
+
+  /* --- LAAD BESTELLINGEN EN START POLLING --- */
+  async function loadOrdersFromServer() {
+    const data = await fetchOrders();
+    if (Array.isArray(data)) {
+      lastLoadedOrders = data;
+      orderCounter = await fetchCounter();
+      if (!orderCounter) orderCounter = (lastLoadedOrders.length > 0) ? Math.max(...lastLoadedOrders.map(o => o.number)) + 1 : 1;
+      renderOrdersInOperator();
+      renderOrdersInDisplay();
+    }
+  }
+
+  async function fetchCounter() {
+    try {
+      const res = await fetch(ORDER_BIN_URL + "/latest", {
+        headers: { "X-Master-Key": ORDER_API_KEY }
+      });
+      if (!res.ok) throw new Error("Fout bij ophalen teller");
+      const json = await res.json();
+      return json.record.counter || 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  function startPolling() {
+    if (pollingInterval) clearInterval(pollingInterval);
+    pollingInterval = setInterval(async () => {
+      const orders = await fetchOrders();
+      if (JSON.stringify(orders) !== JSON.stringify(lastLoadedOrders)) {
+        lastLoadedOrders = orders;
+        renderOrdersInOperator();
+        renderOrdersInDisplay();
+        if(loggedInAs === "OperatorScreen"){
+          playDoneSoundIfNeeded();
+        }
+      }
+    }, 2500);
+  }
+
+  /* --- BESTELLING PLAATSEN --- */
+  async function checkout() {
+    if (cart.length === 0) return alert("Je winkelmand is leeg!");
+    const remarks = document.getElementById("orderRemarks").value.trim();
+    const newOrder = {
+      number: orderCounter,
+      items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, amount: i.amount })),
+      remarks: remarks,
+      status: "In behandeling",
+      timestamp: Date.now()
+    };
+    lastLoadedOrders.push(newOrder);
+    orderCounter++;
+    await saveOrders(lastLoadedOrders, orderCounter);
+
+    // Reset winkelmand
+    cart = [];
+    updateCartUI();
+    document.getElementById("orderRemarks").value = "";
+    document.getElementById("remarksSection").style.display = "none";
+    document.getElementById("cartBar").style.display = "none";
+
+    // Toon bestelstatus
+    document.getElementById("displayOrderNumber").textContent = newOrder.number;
+    document.getElementById("displayOrderStatus").textContent = newOrder.status;
+    document.getElementById("orderStatusScreen").classList.add("active");
+  }
+
+  /* --- RENDER BESTELLINGEN OPERATOR --- */
+  function renderOrdersInOperator() {
+    if(loggedInAs !== "Operator") return;
+    const container = document.getElementById("ordersList");
+    container.innerHTML = "";
+    lastLoadedOrders.forEach(order => {
+      const div = document.createElement("div");
+      div.className = "orderCard";
+      if(order.status === "Klaar") div.classList.add("ready");
+      div.textContent = "#" + order.number;
+      div.onclick = () => openOrderDetails(order.number);
+      container.appendChild(div);
+    });
+
+    // Reset telling knop enabled als geen bestellingen
+    document.getElementById("resetCounterBtn").disabled = (lastLoadedOrders.length > 0);
+  }
+
+  /* --- OPEN DETAILS LINKS --- */
+  function openOrderDetails(orderNumber) {
+    currentOrderDetails = lastLoadedOrders.find(o => o.number === orderNumber);
+    if(!currentOrderDetails) return;
+    const detailsBox = document.getElementById("orderDetailsBox");
+    document.getElementById("detailOrderNumber").textContent = currentOrderDetails.number;
+    let productsList = currentOrderDetails.items.map(i => `${i.amount}x ${i.name}`).join(", ");
+    document.getElementById("detailProduct").textContent = productsList;
+    let totalPrice = currentOrderDetails.items.reduce((sum, i) => sum + i.price * i.amount, 0);
+    document.getElementById("detailAmount").textContent = currentOrderDetails.items.reduce((sum, i) => sum + i.amount, 0);
+    document.getElementById("detailPrice").textContent = totalPrice.toFixed(2);
+    document.getElementById("detailRemarks").textContent = currentOrderDetails.remarks || "-";
+
+    // Status dropdown
+    document.getElementById("statusSelect").value = currentOrderDetails.status;
+
+    detailsBox.style.display = "block";
+  }
+
+  /* --- SAVE STATUS & UPDATE --- */
+  async function saveOrderStatus() {
+    if(!currentOrderDetails) return;
+    const newStatus = document.getElementById("statusSelect").value;
+    currentOrderDetails.status = newStatus;
+
+    // Update array
+    const idx = lastLoadedOrders.findIndex(o => o.number === currentOrderDetails.number);
+    if(idx > -1) {
+      lastLoadedOrders[idx] = currentOrderDetails;
+      await saveOrders(lastLoadedOrders, orderCounter);
+      document.getElementById("orderDetailsBox").style.display = "none";
+      renderOrdersInOperator();
+      renderOrdersInDisplay();
+    }
+  }
+
+  /* --- VERWIJDER BESTELLING --- */
+  async function deleteOrder() {
+    if(!currentOrderDetails) return;
+    if(!confirm(`Weet je zeker dat je bestelling #${currentOrderDetails.number} wilt verwijderen?`)) return;
+
+    lastLoadedOrders = lastLoadedOrders.filter(o => o.number !== currentOrderDetails.number);
+    currentOrderDetails = null;
+    await saveOrders(lastLoadedOrders, orderCounter);
+
+    document.getElementById("orderDetailsBox").style.display = "none";
+    renderOrdersInOperator();
+    renderOrdersInDisplay();
+  }
+
+  /* --- RESET TELLLING --- */
+  async function resetCounter() {
+    if(lastLoadedOrders.length > 0){
+      alert("Je kunt de telling alleen resetten als er geen bestellingen zijn.");
+      return;
+    }
+    orderCounter = 1;
+    await saveOrders(lastLoadedOrders, orderCounter);
+    alert("Bestelnummer telling is gereset naar #1");
+  }
+
+  /* --- DISPLAY SCHERM --- */
+  function renderOrdersInDisplay() {
+    if(loggedInAs !== "OperatorScreen") return;
+    const pendingContainer = document.getElementById("displayPending");
+    const readyContainer = document.getElementById("displayReady");
+    pendingContainer.innerHTML = "";
+    readyContainer.innerHTML = "";
+
+    lastLoadedOrders.forEach(order => {
+      const div = document.createElement("div");
+      div.className = "displayItem";
+      if(order.status === "Klaar") div.classList.add("ready");
+      div.textContent = "#" + order.number;
+      if(order.status === "In behandeling") pendingContainer.appendChild(div);
+      else if(order.status === "Klaar") readyContainer.appendChild(div);
+    });
+  }
+
+  /* --- GELUID BIJ KLAAR --- */
+  let lastReadyCount = 0;
+  function playDoneSoundIfNeeded() {
+    let readyCount = lastLoadedOrders.filter(o => o.status === "Klaar").length;
+    if(readyCount > lastReadyCount){
+      const audio = new Audio("JR/Sounds/DoneSoundForScreen.mp3");
+      audio.play().catch(() => {});
+    }
+    lastReadyCount = readyCount;
+  }
+
+  /* --- LOGIN --- */
+  function handleLogin() {
+    const user = document.getElementById("loginUser").value.trim();
+    const pass = document.getElementById("loginPass").value.trim();
+
+    if(user === "Operator" && pass === "8008") {
+      loggedInAs = "Operator";
+      document.getElementById("loginScreen").classList.remove("active");
+      showOperatorScreen();
+    } else if(user === "OperatorScreen" && pass === "8008") {
+      loggedInAs = "OperatorScreen";
+      document.getElementById("loginScreen").classList.remove("active");
+      showDisplayScreen();
+    } else {
+      alert("Onjuiste gebruikersnaam of wachtwoord!");
+    }
+  }
+
+  function showOperatorScreen() {
+    document.getElementById("customerMenu").style.display = "none";
+    document.getElementById("operatorScreen").classList.add("active");
+    document.getElementById("displayScreen").style.display = "none";
+    renderOrdersInOperator();
+    document.getElementById("orderDetailsBox").style.display = "none";
+  }
+
+  function showDisplayScreen() {
+    document.getElementById("customerMenu").style.display = "none";
+    document.getElementById("operatorScreen").style.display = "none";
+    document.getElementById("displayScreen").style.display = "block";
+    renderOrdersInDisplay();
+  }
+
+</script>
+<script>
+  /* --- KLANTENMENU EN WINKELMAND EVENTS --- */
+
+  // Klik op tab => toon items
+  function showTab(tabName) {
+    selectedTab = tabName;
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.classList.toggle("active", tab.textContent === tabName);
+    });
+    renderMenuItems(PRODUCTS[tabName]);
+  }
+
+  // Menu items renderen (zit al in deel1, maar fixen voor refresh)
+  function renderMenuItems(items) {
+    const menuContent = document.getElementById("menuContent");
+    menuContent.innerHTML = "";
+    items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "menu-item";
+      div.innerHTML = `<h3>${item.name}</h3><span>€${item.price.toFixed(2)}</span>`;
+      div.onclick = () => addToCart(item);
+      menuContent.appendChild(div);
+    });
+  }
+
+  // Winkelmandje updaten (aantal, tonen, afrekenen button)
+  function updateCartUI() {
+    const cartBar = document.getElementById("cartBar");
+    if(cart.length === 0) {
+      cartBar.style.display = "none";
+      document.getElementById("remarksSection").style.display = "none";
+      document.getElementById("checkoutBtn").disabled = true;
+    } else {
+      cartBar.style.display = "flex";
+      document.getElementById("remarksSection").style.display = "block";
+      const totalItems = cart.reduce((a,b) => a + b.amount, 0);
+      document.getElementById("cartItems").textContent = `Winkelmand: ${totalItems} item${totalItems > 1 ? "s" : ""}`;
+      document.getElementById("checkoutBtn").disabled = false;
+    }
+  }
+
+  // Toevoegen aan winkelmand (max 50 voor Pringles)
+  function addToCart(product) {
+    let cartItem = cart.find(i => i.id === product.id);
+    if (!cartItem) {
+      cart.push({ ...product, amount: 1 });
+    } else {
+      if(product.id.startsWith("pringles")) {
+        if(cartItem.amount < 50) cartItem.amount++;
+      } else {
+        cartItem.amount++;
+      }
+    }
+    updateCartUI();
+  }
+
+  /* --- BESTELLING STATUS SCHERM --- */
+
+  document.getElementById("closeStatusBtn").onclick = () => {
+    document.getElementById("orderStatusScreen").classList.remove("active");
+  };
+
+  /* --- OPERATOR DETAILS KNOPPEN --- */
+
+  document.getElementById("saveStatusBtn").onclick = async () => {
+    await saveOrderStatus();
+  };
+
+  document.getElementById("deleteOrderBtn").onclick = async () => {
+    await deleteOrder();
+  };
+
+  document.getElementById("resetCounterBtn").onclick = async () => {
+    await resetCounter();
+  };
+
+  /* --- STARTUP INIT --- */
+  window.onload = () => {
+    initTabs();
+    showTab(selectedTab);
+    loadOrdersFromServer();
+    startPolling();
+    setupKeyboardShortcut();
+    setupEventListeners();
+  };
+
+  function initTabs() {
+    const tabsContainer = document.getElementById("tabsContainer");
+    tabsContainer.innerHTML = "";
+    Object.keys(PRODUCTS).forEach(tabName => {
+      const tab = document.createElement("div");
+      tab.className = "tab";
+      tab.textContent = tabName;
+      tab.onclick = () => showTab(tabName);
+      tabsContainer.appendChild(tab);
+    });
+  }
+
+  function setupKeyboardShortcut() {
+    document.addEventListener("keydown", e => {
+      if (e.ctrlKey && e.shiftKey && (e.key === "Z" || e.key === "z")) {
+        document.getElementById("loginScreen").classList.add("active");
+      }
+    });
+  }
+
+  function setupEventListeners() {
+    document.getElementById("loginBtn").onclick = handleLogin;
+    document.getElementById("checkoutBtn").onclick = checkout;
+  }
+
+  /* --- CLEANUP --- */
+  function resetUI() {
+    cart = [];
+    updateCartUI();
+    document.getElementById("remarksSection").style.display = "none";
+    document.getElementById("cartBar").style.display = "none";
+    document.getElementById("orderRemarks").value = "";
+    document.getElementById("orderStatusScreen").classList.remove("active");
+    document.getElementById("customerMenu").style.display = "block";
+    document.getElementById("operatorScreen").style.display = "none";
+    document.getElementById("displayScreen").style.display = "none";
+    loggedInAs = null;
+    currentOrderDetails = null;
+    document.getElementById("orderDetailsBox").style.display = "none";
+  }
 </script>
 
 </body>
